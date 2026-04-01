@@ -9,3 +9,6 @@ DerivedData/
 # Metal compiled
 *.air
 *.metallib
+
+# Generated documentation
+docs/
