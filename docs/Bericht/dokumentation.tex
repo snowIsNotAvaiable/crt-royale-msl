@@ -1,0 +1,852 @@
+% =============================================================================
+% CRT-Royale MSL -- Projektdokumentation
+% Software-Projekt, SS 2026
+% Hochschule Karlsruhe (HKA)
+% =============================================================================
+\documentclass[11pt, a4paper]{article}
+
+% --- Pakete ---
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{listings}
+\usepackage{tcolorbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tocloft}
+\usepackage{colortbl}
+\usepackage[justification=centering]{caption}
+\usepackage{etoolbox}
+
+% --- Tabellen-Styling: alternierende Zeilen ---
+\newcommand{\tableheadercolor}{\rowcolor{hkared}}
+\newcommand{\thw}[1]{\color{white}\textbf{#1}}  % table header white
+\setlength{\aboverulesep}{0pt}
+\setlength{\belowrulesep}{0pt}
+\setlength{\extrarowheight}{3pt}
+\renewcommand\tabularxcolumn[1]{m{#1}}
+
+\usetikzlibrary{arrows.meta, positioning, calc, shapes.geometric, fit}
+
+% --- Farben (HKA Corporate) ---
+\definecolor{hkared}{RGB}{198, 42, 18}
+\definecolor{hkagray}{RGB}{100, 100, 100}
+\definecolor{codebg}{RGB}{245, 245, 245}
+\definecolor{codeframe}{RGB}{200, 200, 200}
+\definecolor{keywordblue}{RGB}{0, 0, 180}
+\definecolor{commentgreen}{RGB}{0, 128, 0}
+\definecolor{stringred}{RGB}{163, 21, 21}
+
+% --- Hyperref Setup ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=.,
+    urlcolor=hkared,
+    citecolor=hkared
+}
+
+% --- Code Listings ---
+\lstdefinelanguage{Metal}{
+    morekeywords={kernel, void, float, float2, float3, float4, half, half4,
+        uint, uint2, int, bool, struct, namespace, constant, device,
+        texture2d, sampler, thread, threadgroup, access, read, write,
+        if, else, return, for, using},
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    keywordstyle=\color{keywordblue}\bfseries,
+    commentstyle=\color{commentgreen}\itshape,
+    stringstyle=\color{stringred},
+    numbers=left,
+    numberstyle=\tiny\color{hkagray},
+    numbersep=8pt,
+    breaklines=true,
+    tabsize=4,
+    showstringspaces=false,
+    captionpos=b,
+    xleftmargin=1.5em,
+    framexleftmargin=1.5em,
+}
+
+% --- Section Styling (Text) ---
+% Große Kapitel: schwarz, größer
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+% Unterkapitel: rot
+\titleformat{\subsection}{\normalsize\bfseries\color{hkared}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape\color{hkared}}{\thesubsubsection}{1em}{}
+\titlespacing*{\section}{0pt}{1.5em}{0.6em}
+\titlespacing*{\subsection}{0pt}{0.8em}{0.3em}
+\titlespacing*{\subsubsection}{0pt}{0.6em}{0.2em}
+
+% --- Inhaltsverzeichnis Styling ---
+% Große Kapitel: Text schwarz bold, Seitenzahl rot bold
+\renewcommand{\cftsecfont}{\bfseries\color{black}}
+\renewcommand{\cftsecpagefont}{\bfseries\color{hkared}}
+\renewcommand{\cftsecleader}{\color{hkared}\cftdotfill{\cftsecdotsep}}
+\renewcommand{\cftsecdotsep}{\cftdotsep}
+% Unterkapitel: Nummer+Text rot, Punkte rot, Seitenzahl schwarz
+\renewcommand{\cftsubsecfont}{\color{hkared}}
+\renewcommand{\cftsubsecpagefont}{\color{black}}
+\renewcommand{\cftsubsecleader}{\color{hkared}\cftdotfill{\cftsubsecdotsep}}
+\renewcommand{\cftsubsubsecfont}{\color{hkared}}
+\renewcommand{\cftsubsubsecpagefont}{\color{black}}
+\renewcommand{\cftsubsubsecleader}{\color{hkared}\cftdotfill{\cftsubsubsecdotsep}}
+% Abstände: Luft vor Kapitel, Untereinträge eng
+\setlength{\cftbeforesecskip}{0.8em}
+\setlength{\cftbeforesubsecskip}{0.15em}
+\setlength{\cftbeforesubsubsecskip}{0.1em}
+% Abstand NACH Kapitel-Zeile (vor erstem Untereintrag)
+\renewcommand{\cftsecafterpnum}{\vskip 0.3em}
+% Abstand nach "Inhaltsverzeichnis"-Überschrift
+\setlength{\cftaftertoctitleskip}{1cm}
+
+% --- Header/Footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{hkagray}CRT-Royale {[MSL]} -- Projektdokumentation}
+\fancyhead[R]{\small\color{hkagray}Software-Projekt SS~2026}
+\fancyfoot[C]{\small\color{hkagray}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% =============================================================================
+\begin{document}
+
+% --- Titelseite ---
+\begin{titlepage}
+    \centering
+    \includegraphics[width=0.35\textwidth]{HKA.jpg}
+
+    {\normalsize\color{hkagray} University of Applied Sciences}\\[0.125cm]
+    {\small\color{hkagray} Fakult\"at f\"ur Informatik und Wirtschaftsinformatik}
+
+    \vspace{.5cm}
+    {\color{hkared}\rule{\textwidth}{1.5pt}}
+
+    \vspace{1.5cm}
+    {\fontsize{24}{30}\selectfont\bfseries\color{hkared} CRT-Royale {[MSL]}}\\[1cm]
+    {\Large Portierung von CRT-Royale in die Metal Shading Language \newline sowie Implementierung in RetroVisor}\\[1cm]
+    {\LARGE\bfseries Projektdokumentation}
+
+    \vspace{1cm}
+    {\large Software-Projekt}\\
+    {\large Sommersemester 2026}
+
+    \vspace{.5cm}
+    {\color{hkared}\rule{0.6\textwidth}{0.5pt}}
+    \vspace{1.5cm}
+
+    {\normalsize
+    \begin{tabular}{rl}
+        \textbf{Betreuer:}  & Prof.~Dr.~Hoffmann \\[0.5cm]
+        \textbf{Bearbeiter:} & Devin Uyan \\[0.5cm]
+        \textbf{Repository:} & \url{https://github.com/snowIsNotAvaiable/crt-royale-msl} \\
+    \end{tabular}
+    }
+
+    \vfill
+    {\small\color{hkagray} Version 1.0 -- Stand: \today}
+\end{titlepage}
+
+% --- Inhaltsverzeichnis ---
+\setcounter{page}{1}
+\vspace*{-2cm}
+\tableofcontents
+\newpage
+\vspace*{-.5cm}
+% =============================================================================
+\section{Einleitung}
+% =============================================================================
+\vspace{.5cm}
+
+\subsection{Motivation}
+\vspace{.5cm}
+Retro-Gaming erfreut sich wachsender Beliebtheit. Emulatoren wie RetroArch oder OpenEmu erm\"oglichen es, klassische Konsolenspiele auf moderner Hardware zu spielen. Dabei geht jedoch ein wesentliches visuelles Merkmal verloren: das charakteristische Bild eines \textbf{CRT-Monitors} (Cathode Ray Tube) mit seinen Scanlines, dem Phosphor-Glow und der typischen \newline Farbwiedergabe. \vspace{.5cm}
+
+\textbf{CRT-Royale} von TroggleMonkey ist einer der aufwendigsten und physikalisch genauesten CRT-Shader. Er simuliert in einer \textbf{13-Pass-Pipeline} nahezu alle optischen Eigenschaften eines CRT-Bildschirms -- von der Gamma-Korrektur \"uber Phosphormasken bis hin zu Bloom und \newline Geometrieverzerrung. Allerdings existiert CRT-Royale bisher nur f\"ur Slang/GLSL (libretro), \newline Cg und HLSL (ReShade). Eine native Portierung auf \textbf{Apple Metal (MSL)} fehlt vollst\"andig.
+
+\vspace{.5cm}
+\subsection{Projektziel}
+\vspace{.5cm}
+Ziel dieses Semesterprojekts ist die vollst\"andige Portierung des CRT-Royale-Shaders von Slang/GLSL in die \textbf{Metal Shading Language (MSL)} und dessen Integration in \textbf{RetroVisor}, eine macOS-Anwendung von Prof.~Dr.~Hoffmann, die GPU-basierte Bildeffekte als Echtzeit-Overlay auf \newline beliebige Fenster anwendet.
+\vspace{.5cm} \newline
+Das Projekt gliedert sich in vier Phasen: \vspace{.25cm}
+\begin{enumerate}[nosep]
+    \item \textbf{Portierung:} \"Ubersetzung aller 13 Shader-Passes von GLSL nach MSL \\
+    \item \textbf{Integration:} Einbindung der MSL-Shader in die RetroVisor-Architektur \\
+    \item \textbf{Validierung:} Visueller Vergleich mit dem GLSL-Original (Comparison-Images) \\
+    \item \textbf{Evaluierung:} Qualit\"ats- und Performancebewertung gegen\"uber dem Original
+\end{enumerate}
+
+\vspace{.75cm}
+\subsection{Abgrenzung}
+\vspace{.75cm}
+\begin{itemize}[leftmargin=*, nosep]
+    \item Es wird \textbf{kein eigener Emulator} entwickelt -- RetroVisor ist eine bestehende Anwendung. \\
+    \item Die Portierung beschr\"ankt sich auf den \textbf{CRT-Royale-Shader}. \\
+    \item Zielplattform ist ausschlie\ss lich \textbf{macOS mit Apple Silicon} (Metal API). \\
+    \item Machine-Learning-basierte Upscaling-Verfahren (z.\,B.\ FSR, DLSS) sind nicht Gegenstand.
+\end{itemize}
+
+% =============================================================================
+\newpage
+\vspace*{-.5cm}
+\section{Grundlagen}
+% =============================================================================
+\vspace{.5cm}
+
+\subsection{GPU-Programmierung und Compute Shader}
+\vspace{.5cm}
+Moderne GPUs sind massiv parallele Prozessoren, die Tausende von Threads gleichzeitig \newline ausf\"uhren k\"onnen. Im Gegensatz zu CPUs, die f\"ur sequentielle Aufgaben optimiert sind, eignen sich GPUs ideal f\"ur Aufgaben, bei denen \textbf{derselbe Algorithmus auf viele Datenpunkte gleichzeitig} angewendet wird (SIMD -- Single Instruction, Multiple Data). \vspace{.25cm}
+
+\textbf{Compute Shader} sind Programme, die direkt auf der GPU laufen und nicht an die klassische Grafikpipeline (Vertex $\rightarrow$ Fragment) gebunden sind. Sie arbeiten auf einem flexiblen Grid aus \textit{Threadgroups}:
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        box/.style={draw, minimum width=0.4cm, minimum height=0.4cm, inner sep=0pt},
+        group/.style={draw, thick, hkared, rounded corners=2pt},
+    ]
+        % Grid of threads (16x16 simplified as 4x4 blocks)
+        \foreach \x in {0,...,3} {
+            \foreach \y in {0,...,3} {
+                \node[box, fill=hkared!15] at (\x*0.5, \y*0.5) {};
+            }
+        }
+        \node[group, fit={(0-0.25,-0.25) (1.75, 1.75)}] (tg1) {};
+        \node[below=0.1cm of tg1, font=\scriptsize] {Threadgroup (0,0)};
+
+        \foreach \x in {0,...,3} {
+            \foreach \y in {0,...,3} {
+                \node[box, fill=hkared!25] at (\x*0.5+3, \y*0.5) {};
+            }
+        }
+        \node[group, fit={(2.75,-0.25) (4.75, 1.75)}] (tg2) {};
+        \node[below=0.1cm of tg2, font=\scriptsize] {Threadgroup (1,0)};
+
+        \foreach \x in {0,...,3} {
+            \foreach \y in {0,...,3} {
+                \node[box, fill=hkared!35] at (\x*0.5+6, \y*0.5) {};
+            }
+        }
+        \node[group, fit={(5.75,-0.25) (7.75, 1.75)}] (tg3) {};
+        \node[below=0.1cm of tg3, font=\scriptsize] {Threadgroup (2,0)};
+
+        \node[font=\large] at (9, 0.75) {\ldots};
+
+        \node[above=0.5cm, font=\small\bfseries] at (4.25, 1.75) {Dispatch Grid};
+    \end{tikzpicture} \vspace{.125cm}
+    \caption{Compute-Shader-Dispatch: \newline Das Bild wird in Threadgroups unterteilt, jeder Thread bearbeitet ein Pixel}
+\end{figure}
+Jeder Thread kennt seine Position im Grid (\texttt{thread\_position\_in\_grid}) und bearbeitet \newline typischerweise genau ein Pixel. RetroVisor verwendet \textbf{16$\times$16 Threadgroups} -- \newline jede Gruppe bearbeitet also einen 16$\times$16-Pixel-Block des Ausgabebildes.
+
+\vspace{.5cm}
+\subsection{Metal Shading Language (MSL)}
+\vspace{.5cm}
+MSL ist Apples GPU-Programmiersprache, basierend auf \textbf{C++14} \newline mit GPU-spezifischen Erweiterungen. \vspace{.5cm} \newline Zentrale Konzepte:
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{hkared!5}{white}
+\begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \tableheadercolor \thw{Konzept} & \thw{Beschreibung} \\
+    \midrule
+    \texttt{kernel} & Einstiegspunkt f\"ur Compute Shader (\"aquivalent zu \texttt{main()} in GLSL) \\
+    \texttt{texture2d<T>} & 2D-Textur mit Typparameter (z.\,B.\ \texttt{float} oder \texttt{half}) \\
+    \texttt{sampler} & Konfiguriert Textur-Sampling (Filter, Adressierung) \\
+    \texttt{float2/3/4} & Vektortypen (\"aquivalent zu GLSL \texttt{vec2/3/4}) \\
+    \texttt{constant T\&} & Uniform-Daten (read-only, von der CPU \"ubergeben) \\
+    \texttt{[[ buffer(n) ]]} & Attribut: bindet Parameter an Buffer-Slot $n$ \\
+    \texttt{[[ texture(n) ]]} & Attribut: bindet Textur an Slot $n$ \\
+    \texttt{thread\_position\_in\_grid} & Globale Thread-ID (welches Pixel bearbeitet wird) \\
+    \bottomrule
+\end{tabularx}
+\rowcolors{0}{}{}
+\caption{Zentrale MSL-Konzepte}
+\end{table}
+\newpage \vspace*{-.5cm}
+\subsection{GLSL vs.\ MSL -- Wesentliche Unterschiede}
+\vspace{.5cm}
+Die Portierung von GLSL nach MSL erfordert systematische \"Ubersetzungen:
+\vspace{.25cm}
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{hkared!5}{white}
+\begin{tabularx}{\textwidth}{lXX}
+    \toprule
+    \tableheadercolor \thw{Aspekt} & \thw{GLSL / Slang} & \thw{Metal (MSL)} \\
+    \midrule
+    Vektortypen & \texttt{vec2}, \texttt{vec3}, \texttt{vec4} & \texttt{float2}, \texttt{float3}, \texttt{float4} \\
+    Textur-Zugriff & \texttt{texture(sampler2D, uv)} & \texttt{tex.sample(sam, uv)} \\
+    Textur + Sampler & Kombiniert (\texttt{sampler2D}) & Getrennt (\texttt{texture2d} + \texttt{sampler}) \\
+    Uniforms & \texttt{uniform float x;} & \texttt{constant Uniforms \&u \newline [[ buffer(0) ]]} \\
+    Fragment-Koord. & \texttt{gl\_FragCoord} & \texttt{thread\_position\_in\_grid} \\
+    Shader-Typ & Fragment Shader & Compute Kernel \\
+    Modulo & \texttt{mod(x, y)} & \texttt{x - y * trunc(x/y)} (manuell) \\
+    Ausgabe & \texttt{FragColor = ...} & \texttt{outTexture.write(color, gid)} \\
+    \bottomrule
+\end{tabularx}
+\rowcolors{0}{}{}
+\caption{GLSL-zu-MSL-\"Ubersetzungstabelle}
+\end{table}
+
+Ein besonders wichtiger Unterschied: GLSL-Shader nutzen die \textbf{Fragment-Shader-Pipeline} (ein Dreieck wird gerastert, pro Pixel l\"auft der Shader). RetroVisor hingegen setzt auf \textbf{Compute Shader}, bei denen das Dispatch-Grid explizit berechnet wird. Dies bietet mehr Flexibilit\"at, erfordert aber manuelle Bounds-Checks.
+\vspace{.75cm}
+% =============================================================================
+\section{Ist-Analyse: CRT-Royale}
+% =============================================================================
+\vspace{.5cm}
+
+\subsection{\"Uberblick}
+\vspace{.5cm}
+CRT-Royale ist ein Open-Source-Shader (GPL~v2+) von \textit{TroggleMonkey}, \newline der in der \textbf{libretro/slang-shaders}-Sammlung gepflegt wird. \newline Er gilt als einer der physikalisch genauesten CRT-Simulatoren \newline und modelliert folgende optische Ph\"anomene: \vspace{.5cm}
+
+\begin{itemize}[leftmargin=*, nosep]
+    \item \textbf{Gamma-Linearisierung:} Umrechnung vom CRT-Gamma-Farbraum in lineares Licht \\
+    \item \textbf{Scanlines:} Horizontale Helligkeitsmodulation (Zeilen eines Kathodenstrahlr\"ohren-Bildes) \\
+    \item \textbf{Phosphormasken:} RGB-Subpixel-Muster (Aperture Grille, Slot Mask, Shadow Mask) \\
+    \item \textbf{Bloom / Halation:} Licht\"uberstrahlung durch die Glasscheibe des Monitors \\
+    \item \textbf{Konvergenz:} Leichte Verschiebung der RGB-Elektronenstrahlen \\
+    \item \textbf{Interlacing:} Halbbilder-Simulation (240p/480i) \\
+    \item \textbf{Geometrieverzerrung:} Gew\"olbte Bildfl\"ache eines CRT-Monitors
+\end{itemize}
+\newpage \vspace*{-.5cm}
+\subsection{Die 13-Pass-Pipeline}
+\vspace{.5cm}
+CRT-Royale verarbeitet das Eingabebild in 13 aufeinanderfolgenden Passes. Jeder Pass liest die Ausgabe des vorherigen und schreibt in eine Zwischentextur: \vspace{.25cm}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        pass/.style={draw, rounded corners, minimum width=5.5cm, minimum height=0.7cm,
+                     align=center, font=\scriptsize, fill=hkared!10},
+        arrow/.style={-{Stealth}, thick, hkared!70},
+        node distance=0.4cm,
+    ]
+        \node[pass, fill=hkared!5]  (p0)                    {Eingabebild (Emulator-Frame)};
+        \node[pass]                  (p1)  [below=of p0]     {Pass~1: Linearize + Bob Fields};
+        \node[pass]                  (p2)  [below=of p1]     {Pass~2: Vertical Scanlines (Beam)};
+        \node[pass]                  (p3)  [below=of p2]     {Pass~3: Mask Resize Horizontal};
+        \node[pass]                  (p4)  [below=of p3]     {Pass~4: Mask Resize Vertical};
+        \node[pass]                  (p5)  [below=of p4]     {Pass~5: Scanlines + Mask Apply};
+        \node[pass]                  (p6)  [below=of p5]     {Pass~6: Brightpass (Bloom Extract)};
+        \node[pass]                  (p7)  [below=of p6]     {Pass~7: Bloom Vertical};
+        \node[pass]                  (p8)  [below=of p7]     {Pass~8: Bloom Horizontal + Reconstitute};
+        \node[pass, fill=hkared!20]  (p9)  [below=of p8]     {Pass~9--11: Bloom Approximation / Fake-Bloom};
+        \node[pass, fill=hkared!30]  (p10) [below=of p9]     {Pass~12--13: Geometry + AA + Final Output};
+
+        \foreach \a/\b in {p0/p1, p1/p2, p2/p3, p3/p4, p4/p5, p5/p6, p6/p7, p7/p8, p8/p9, p9/p10} {
+            \draw[arrow] (\a) -- (\b);
+        }
+    \end{tikzpicture}
+    \vspace{.125cm}
+    \caption[CRT-Royale 13-Pass-Pipeline]{CRT-Royale 13-Pass-Pipeline -- 
+    Datenfluss vom Eingabebild zum fertigen CRT-Effekt}
+\end{figure}
+\vspace{-.125cm}
+\subsection{Quellstruktur}
+\vspace{.25cm}
+Die relevanten Quelldateien befinden sich unter \texttt{crt/shaders/crt-royale/src/}:
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{hkared!5}{white}
+\begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \tableheadercolor \thw{Datei} & \thw{Funktion} \\
+    \midrule
+    \texttt{bind-shader-params.h} & Alle $\sim$45 konfigurierbaren Parameter \\
+    \texttt{gamma-management.h} & Gamma-Linearisierung und -Encoding \\
+    \texttt{scanline-functions.h} & Beam-Profile, Scanline-Breite, Interlace-Erkennung \\
+    \texttt{phosphor-mask-resizing.h} & Lanczos-Sinc-Resampling der Phosphormaske \\
+    \texttt{bloom-functions.h} & Bloom-Berechnung und -Extraktion \\
+    \texttt{geometry-functions.h} & Bildschirmkr\"ummung, Pin-Cushion-Verzerrung \\
+    \texttt{tex2Dantialias.h} & Anti-Aliasing-Algorithmen ($\sim$80\,KB) \\
+    \texttt{derived-settings-and-constants.h} & Berechnete Konstanten aus User-Settings \\
+    \texttt{user-settings.h} & Nutzer-Konfiguration und GPU-Capability-Flags \\
+    \bottomrule
+\end{tabularx}
+\rowcolors{0}{}{}
+\caption{Wichtige Header-Dateien des CRT-Royale-Originals}
+\end{table}
+\newpage \vspace*{-.125cm}
+\subsection{Konfigurierbare Parameter (Auszug)}
+\vspace{.5cm}
+CRT-Royale bietet ca.\ 45 Parameter, die das Erscheinungsbild steuern. Die wichtigsten: \vspace{.25cm}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{hkared!5}{white}
+\begin{tabularx}{\textwidth}{llX}
+    \toprule
+    \tableheadercolor \thw{Parameter} & \thw{Default} & \thw{Beschreibung} \\
+    \midrule
+    \texttt{crt\_gamma} & 2.5 & Gamma des simulierten CRT-Monitors \\
+    \texttt{lcd\_gamma} & 2.2 & Gamma des realen Ausgabedisplays \\
+    \texttt{mask\_type} & 1 & Phosphormasken-Typ (0=Grille, 1=Slot, 2=Shadow) \\
+    \texttt{interlace\_detect} & 1 & Automatische Interlace-Erkennung \\
+    \texttt{beam\_min\_sigma} & 0.02 & Minimale Scanline-Breite (Beam) \\
+    \texttt{beam\_max\_sigma} & 0.30 & Maximale Scanline-Breite (Beam) \\
+    \texttt{bloom\_underestimate} & 0.80 & Bloom-Intensit\"at \\
+    \texttt{geom\_mode} & 0 & Geometrie-Modus (0=flat, 1--3=curved) \\
+    \texttt{geom\_radius} & 2.0 & Kr\"ummungsradius des simulierten CRT \\
+    \texttt{convergence\_offset} & 0.0 & RGB-Konvergenz-Verschiebung \\
+    \bottomrule
+\end{tabularx}
+\rowcolors{0}{}{} \vspace{.25cm}
+\caption{Wichtige CRT-Royale-Parameter}
+\end{table} \vspace{1cm}
+% =============================================================================
+\section{Zielarchitektur: RetroVisor}
+% =============================================================================
+\vspace{.75cm}
+
+\subsection{\"Uberblick}
+\vspace{.75cm}
+\textbf{RetroVisor} ist eine macOS-Anwendung von Prof.~Dr.~Hoffmann, die GPU-basierte \newline Bildeffekte als Echtzeit-Overlay auf beliebige Bildschirmfenster anwendet. \newline Die Anwendung nutzt Apples \textbf{ScreenCaptureKit} zur Fensteraufnahme \newline und die \textbf{Metal API} f\"ur die GPU-beschleunigte Bildverarbeitung.
+\vspace{.75cm} \newline 
+RetroVisor enth\"alt bereits zwei integrierte Shader: \vspace{.5cm} 
+\begin{itemize}[leftmargin=*, nosep]
+    \item \textbf{Sankara:} Multi-Pass-Effekt mit Split/Composite/CRT/DotMask-Kernels
+    \item \textbf{CRT-Easy:} Einfacher Single-Pass-CRT-Effekt
+\end{itemize}
+\vspace{.5cm}
+CRT-Royale MSL wird als \textbf{dritter Shader} in RetroVisor integriert.
+\newpage \vspace*{-.25cm}
+
+\subsection{Shader-Integrationsmuster}
+\vspace{.5cm}
+Jeder Shader in RetroVisor besteht aus zwei Dateien: \vspace{.25cm}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        box/.style={draw, rounded corners, minimum width=4cm, minimum height=1.2cm,
+                    align=center, font=\small},
+        arrow/.style={-{Stealth}, thick},
+        node distance=1.5cm,
+    ]
+        \node[box, fill=hkared!10] (swift) {Swift-Klasse\\(\texttt{CrtRoyale.swift})\\{\scriptsize Shader-Subclass}};
+        \node[box, fill=hkared!20] (metal) [right=2cm of swift] {Metal-Datei\\(\texttt{CrtRoyale.metal})\\{\scriptsize Compute Kernels}};
+        \node[box, fill=hkared!5]  (base) [above=1cm of swift] {\texttt{Shader}\\{\scriptsize Basisklasse}};
+        \node[box, fill=hkared!5]  (kernel) [above=1cm of metal] {\texttt{Kernel}\\{\scriptsize Pipeline-Wrapper}};
+        \node[box, fill=hkared!30] (lib) [above=1.5cm of $(base)!0.5!(kernel)$] {\texttt{ShaderLibrary}\\{\scriptsize Singleton-Registry}};
+
+        \draw[arrow] (swift) -- node[above, font=\scriptsize] {erstellt} (metal);
+        \draw[arrow, dashed] (swift) -- (base);
+        \draw[arrow, dashed] (metal) -- (kernel);
+        \draw[arrow] (lib) -- (base);
+        \draw[arrow] (lib) -- (kernel);
+    \end{tikzpicture} \vspace{.25cm}
+    \caption{RetroVisor Shader-Integrationsmuster}
+\end{figure}
+\vspace{.5cm}
+\begin{enumerate}[nosep]
+    \item \textbf{Swift-Klasse} (erbt von \texttt{Shader}): \vspace{.25cm}
+    \begin{itemize}[nosep]
+        \item Definiert \texttt{Uniforms}-Struct (gespiegelt zum Metal-Pendant)
+        \item Erstellt \texttt{Kernel}-Objekte f\"ur jeden Pass
+        \item Implementiert \texttt{apply()} zur Orchestrierung der Multi-Pass-Pipeline
+        \item Definiert UI-Settings (\texttt{ShaderSetting}) f\"ur Nutzerinteraktion
+    \end{itemize} \vspace{.5cm}
+    \item \textbf{Metal-Datei} (GPU-Code): \vspace{.25cm}
+    \begin{itemize}[nosep]
+        \item Enth\"alt Compute-Kernel-Funktionen (\texttt{kernel void})
+        \item Liest Eingabetexturen, schreibt Ausgabetexturen
+        \item Empf\"angt Uniforms \"uber \texttt{constant}-Buffer
+    \end{itemize}
+\end{enumerate}
+
+\vspace{.75cm}
+\subsection{Render-Pipeline}
+\vspace{.5cm}
+F\"ur jeden Frame durchl\"auft RetroVisor folgenden Ablauf: \vspace{.25cm}
+
+\begin{enumerate}[nosep]
+    \item \textbf{ScreenCaptureKit} liefert ein neues Frame des erfassten Fensters \\
+    \item Die \texttt{apply()}-Methode des aktiven Shaders wird aufgerufen \\
+    \item F\"ur jeden Pass: ein \texttt{Kernel.apply()}-Aufruf dispatcht den Compute Shader \\
+    \item Jeder Kernel liest von einer Quell-Textur und schreibt in eine Ziel-Textur \\
+    \item Das finale Ergebnis wird als Overlay \"uber das Originalfenster gelegt
+\end{enumerate}
+\vspace{.5cm}
+Bei CRT-Royale bedeutet dies: \textbf{13 Kernel-Dispatches pro Frame}, mit 12 Zwischentexturen.
+
+% =============================================================================
+\newpage \vspace*{-1.25cm}
+\section{Technologieauswahl} \vspace{-.125cm}
+% =============================================================================
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{hkared!5}{white}
+\begin{tabularx}{\textwidth}{llX}
+    \toprule
+    \tableheadercolor \thw{Komponente} & \thw{Technologie} & \thw{Begr\"undung} \\
+    \midrule
+    GPU-Sprache & Metal Shading Language & Einzige native GPU-API auf macOS; \newline direkte Integration in RetroVisor \\
+    Host-Sprache & Swift & RetroVisor ist in Swift geschrieben; \newline Metal-Framework nativ verf\"ugbar \\
+    Build-System & Xcode & Standard f\"ur macOS-Entwicklung; \newline Metal-Compiler integriert \\
+    Quellformat & Slang / GLSL & CRT-Royale-Originalformat in der \newline libretro-Shader-Sammlung \\
+    Versionskontrolle & Git / GitHub & Kollaboration und Nachvollziehbarkeit \\
+    Testquelle & OpenEmu + 240p Test Suite & NES-Emulator mit standardisierten \newline Testmustern f\"ur Shader-Validierung \\
+    Referenz & RetroArch (GLSL) & Originaldarstellung zum visuellen Vergleich \\
+    \bottomrule
+\end{tabularx}
+\rowcolors{0}{}{}
+\caption{Technologie\"ubersicht}
+\end{table}
+\vspace{-.5cm}
+% =============================================================================
+\section{Portierungsstrategie}
+% =============================================================================
+\vspace{.125cm}
+
+\subsection{Vorgehen}
+\vspace{.25cm}
+Die Portierung erfolgt \textbf{inkrementell, pass-weise}: \vspace{.25cm}
+
+\begin{enumerate}[nosep]
+    \item Jeden Pass einzeln von Slang/GLSL nach MSL \"ubersetzen \\
+    \item In RetroVisor integrieren und mit Zwischentexturen verkn\"upfen \\
+    \item Visuell gegen das GLSL-Original validieren (Comparison-Images) \\
+    \item Erst nach erfolgreicher Validierung zum n\"achsten Pass \"ubergehen
+\end{enumerate}
+\vspace{.25cm}
+Diese Strategie erm\"oglicht fr\"uhes Feedback: bereits nach Pass~1 (Linearisierung) ist ein sichtbarer Effekt vorhanden und testbar.
+
+\vspace{.125cm}
+\subsection{\"Ubersetzungsregeln}
+\vspace{.25cm}
+Folgende systematische Transformationen werden bei jeder Pass-Portierung angewendet:
+\vspace{.125cm}
+\begin{enumerate}[nosep]
+    \item \textbf{Vektortypen umbenennen:} \texttt{vec2} $\rightarrow$ \texttt{float2}, \texttt{vec3} $\rightarrow$ \texttt{float3}, etc. \\
+    \item \textbf{Textur-Zugriff trennen:} \texttt{texture(tex, uv)} $\rightarrow$ \texttt{tex.sample(sam, uv)} \\
+    \item \textbf{Uniforms b\"undeln:} Einzelne \texttt{uniform}-Deklarationen $\rightarrow$ \texttt{constant Uniforms\&} \\
+    \item \textbf{Fragment $\rightarrow$ Compute:} \texttt{gl\_FragCoord} $\rightarrow$ \texttt{thread\_position\_in\_grid} \\
+    \item \textbf{Ausgabe umschreiben:} \texttt{FragColor = ...} $\rightarrow$ \texttt{outTex.write(color, gid)} \\
+    \item \textbf{Bounds-Check einf\"ugen:} Compute Shader m\"ussen pr\"ufen, \newline ob \texttt{gid} innerhalb der Textur liegt \\
+    \item \textbf{GLSL-Funktionen ersetzen:} \texttt{mod()} manuell, \texttt{fract()}/\texttt{clamp()}/\texttt{mix()} sind identisch
+\end{enumerate}
+
+\newpage \vspace*{-.25cm}
+\subsection{Herausforderungen}
+\vspace{.75cm}
+\begin{itemize}[leftmargin=*, nosep]
+    \item \textbf{Multi-Pass-Orchestrierung:} Im Original steuert eine \texttt{.glslp}-Preset-Datei die Verkettung. In RetroVisor muss die \texttt{apply()}-Methode dies manuell \"ubernehmen. \\
+    \item \textbf{Texture-Size-Semantik:} GLSL-Presets definieren \texttt{scale\_type} (source/viewport/absolute) pro Pass. Diese M\"usse in Swift korrekt berechnet werden. \\
+    \item \textbf{Phosphormasken-Texturen:} PNG-Tile-Texturen m\"ussen als \texttt{MTLTexture} geladen \newline und korrekt gesampelt werden. \\
+    \item \textbf{\texttt{tex2Dantialias.h}:} Die gr\"o\ss te Header-Datei ($\sim$80\,KB) mit komplexen Anti-Aliasing-Algorithmen. \\
+    \item \textbf{Pr\"azisionsunterschiede:} GLSL verwendet standardm\"a\ss ig \texttt{mediump}/\texttt{highp}; \newline MSL bietet \texttt{half} und \texttt{float}. Numerische Abweichungen m\"ussen erkannt \newline und behandelt werden.
+\end{itemize}
+\vspace{.75cm}
+% =============================================================================
+\section{Implementierung}
+% =============================================================================
+\vspace{.75cm}
+
+\subsection{Aktueller Stand}
+\vspace{.75cm}
+Zum aktuellen Zeitpunkt ist \textbf{Pass~1 (Linearize + Bob Fields)} vollst\"andig portiert,\newline und in RetroVisor integriert. 
+\vspace{.5cm} \newline Der Pass umfasst: \vspace{.25cm}
+
+\begin{itemize}[leftmargin=*, nosep]
+    \item \textbf{Gamma-Linearisierung:} \vspace{.25cm} \newline \texttt{pow(color.rgb, crt\_gamma)} -- Umrechnung vom nicht-linearen CRT-Farbraum \newline in lineares Licht \\
+    \item \textbf{Interlace-Erkennung:} \vspace{.25cm} \newline Automatische Erkennung von 480i-Signalen anhand der Texturh\"ohe ($> 288$ Zeilen) \\
+    \item \textbf{Bob-Field-Deinterlacing:} \vspace{.25cm} \newline Bei Interlace-Content wird abwechselnd das gerade/ungerade Halbbild angezeigt \\
+    \item \textbf{Final-Encode:} \vspace{.25cm} \newline R\"uck-\"Ubersetzung von linearem Licht in den LCD-Gamma-Farbraum
+\end{itemize}
+
+\newpage \vspace*{-.75cm}
+\subsection{Pass~1: Code-Beispiel (MSL)}
+\vspace{.5cm}
+
+\begin{lstlisting}[language=Metal, caption={Pass~1 -- Linearize-Kernel (vereinfacht)}]
+kernel void pass1_linearize(
+    texture2d<float, access::read>  inTex  [[ texture(0) ]],
+    texture2d<float, access::write> outTex [[ texture(1) ]],
+    constant Uniforms &u           [[ buffer(0) ]],
+    uint2 gid                      [[ thread_position_in_grid ]])
+{
+    if (gid.x >= outTex.get_width() ||
+        gid.y >= outTex.get_height()) return;
+
+    float2 uv = float2(gid) / float2(outTex.get_width(),
+                                       outTex.get_height());
+    float4 color = inTex.read(gid);
+
+    // Gamma-Linearisierung: CRT gamma -> linear
+    color.rgb = pow(color.rgb, float3(u.crt_gamma));
+
+    // Interlace bobbing (wenn erkannt)
+    if (is_interlaced(u.texture_size.y, u.interlace_detect)) {
+        // Bob-Field-Interpolation...
+    }
+
+    outTex.write(color, gid);
+}
+\end{lstlisting}
+
+\vspace{.5cm}
+\subsection{Swift-Integration}
+\vspace{.5cm}
+
+\begin{lstlisting}[language=Swift, caption={CrtRoyale.swift -- Multi-Pass-Orchestrierung (vereinfacht)},
+    morekeywords={class, final, override, func, var, let, struct, static, convenience, self, init}]
+@MainActor
+final class CrtRoyale: Shader {
+    struct Uniforms {
+        var crt_gamma: Float = 2.5
+        var lcd_gamma: Float = 2.2
+        var interlace_detect: UInt32 = 1
+        // ... weitere Parameter
+    }
+
+    var linearizeKernel: Kernel!
+    var finalEncodeKernel: Kernel!
+    var linearized: MTLTexture!  // Zwischentextur
+
+    override func apply(commandBuffer: MTLCommandBuffer,
+                        in: MTLTexture, out: MTLTexture,
+                        rect: CGRect) {
+        // Pass 1: Linearize
+        linearizeKernel.apply(commandBuffer,
+                              source: input, target: linearized)
+        // ... weitere Passes ...
+        // Final: Encode fuer LCD
+        finalEncodeKernel.apply(commandBuffer,
+                                source: linearized, target: output)
+    }
+}
+\end{lstlisting}
+
+\newpage \vspace*{-.5cm}
+\subsection{Dateien im Projekt}
+\vspace{.25cm}
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{hkared!5}{white}
+\begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \tableheadercolor \thw{Datei} & \thw{Beschreibung} \\
+    \midrule
+    \texttt{RetroVisor/GPU/CrtRoyale.metal} & Metal Compute Kernels (GPU-seitig) \\
+    \texttt{RetroVisor/Shaders/CrtRoyale.swift} & Swift-Integrationsklasse (CPU-seitig) \\
+    \texttt{RetroVisor/Shaders/ShaderLibrary.swift} & Registrierung als 3. Shader \\
+    \texttt{crt-royale-msl/src/CrtRoyalePass1Linearize.metal} & Standalone-Port in eigenem Repo \\
+    \bottomrule
+\end{tabularx}
+\rowcolors{0}{}{} \vspace{.25cm}
+\caption{Projektdateien}
+\end{table}
+\vspace{.25cm}
+% =============================================================================
+\section{Validierungskonzept}
+% =============================================================================
+\vspace{.5cm}
+
+\subsection{Methodik}
+\vspace{.5cm}
+Die Validierung erfolgt durch \textbf{visuellen A/B-Vergleich} zwischen dem GLSL-Original \newline (in RetroArch) und der MSL-Portierung (in RetroVisor):
+\vspace{.25cm}
+\begin{enumerate}[nosep]
+    \item Identisches Eingabebild verwenden (240p Test Suite, definierte Testmuster) \\
+    \item Identische Parameter-Einstellungen (crt\_gamma, lcd\_gamma, mask\_type, etc.) \\
+    \item Screenshots beider Ausgaben erstellen \\
+    \item Pixel-f\"ur-Pixel-Differenzbild berechnen \\
+    \item Akzeptanzkriterium: $\Delta E < 2.0$ (kaum sichtbarer Unterschied)
+\end{enumerate}
+
+\vspace{.5cm}
+\subsection{Testmuster}
+\vspace{.5cm}
+Die \textbf{240p Test Suite} (NES-ROM) bietet standardisierte Testbilder:
+\vspace{.25cm}
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{hkared!5}{white}
+\begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \tableheadercolor \thw{Testmuster} & \thw{Validiert} \\
+    \midrule
+    Color Bars & Farbgenauigkeit der Gamma-Transformation \\
+    Grid Pattern & Scanline-Alignment und Geometrie \\
+    Gradient Ramps & Banding-Artefakte bei Gamma-Konvertierung \\
+    Checkerboard & Phosphormasken-Alignment \\
+    Solid White & Bloom/Halation-Verhalten \\
+    Scrolling Content & Interlace-Bobbing und zeitliche Stabilit\"at \\
+    \bottomrule
+\end{tabularx}
+\rowcolors{0}{}{} \vspace{.25cm}
+\caption{Testmuster und validierte Aspekte}
+\end{table}
+\newpage \vspace*{-1.25cm}
+% =============================================================================
+\section{Evaluierungsplan}
+% =============================================================================
+\vspace{.125cm}
+
+\subsection{Qualit\"atsvergleich}
+\vspace{.125cm}
+\begin{itemize}[leftmargin=*, nosep]
+    \item \textbf{SSIM} (Structural Similarity Index): Quantitative \"Ahnlichkeit zum Original \\
+    \item \textbf{$\Delta E$-Farbdifferenz}: CIE-Farbraumdifferenz pro Pixel \\
+    \item \textbf{Subjektive Bewertung}: Sind die typischen CRT-Merkmale visuell korrekt?
+\end{itemize}
+\vspace{.125cm}
+\subsection{Performancebewertung}
+\vspace{.25cm}
+\begin{itemize}[leftmargin=*, nosep]
+    \item \textbf{Frame-Time:} Dauer eines kompletten 13-Pass-Durchlaufs (Ziel: $< 16.67$\,ms f\"ur 60\,FPS) \\
+    \item \textbf{GPU-Auslastung:} Metal Performance Shaders Profiler in Xcode \\
+    \item \textbf{Speicherverbrauch:} Anzahl und Gr\"o\ss e der Zwischentexturen \\
+    \item \textbf{Vergleich:} Gegen\"uberstellung mit CRT-Easy (Single-Pass) als Baseline
+\end{itemize}
+% =============================================================================
+\section{Projektplanung}
+% =============================================================================
+\vspace{.125cm}
+
+\subsection{Phasen\"ubersicht}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{hkared!5}{white}
+\begin{tabular}{clll}
+    \toprule
+    \tableheadercolor \thw{Phase} & \thw{Bezeichnung} & \thw{Inhalt} & \thw{Status} \\
+    \midrule
+    1 & Portierung & \"Ubersetzung aller 13 Passes GLSL $\rightarrow$ MSL & In Arbeit \\
+    2 & Integration & Einbindung in RetroVisor, UI-Settings, Texturen & Begonnen \\
+    3 & Validierung & A/B-Vergleich mit RetroArch, Comparison-Images & Ausstehend \\
+    4 & Evaluierung & SSIM, $\Delta E$, Frame-Time, GPU-Profiling & Ausstehend \\
+    \bottomrule
+\end{tabular}
+\rowcolors{0}{}{} \vspace{.125cm}
+\caption{Phasen\"ubersicht}
+\end{table}
+\subsection{Detailplan Phase~1: Portierung}
+\vspace{.125cm}
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{hkared!5}{white}
+\begin{tabular}{cll}
+    \toprule
+    \tableheadercolor \thw{Pass} & \thw{Beschreibung} & \thw{Status} \\
+    \midrule
+    1  & Linearize + Bob Fields          & \checkmark ~Abgeschlossen \\
+    2  & Vertical Scanlines (Beam)       & Ausstehend \\
+    3  & Mask Resize Horizontal           & Ausstehend \\
+    4  & Mask Resize Vertical             & Ausstehend \\
+    5  & Scanlines + Mask Apply           & Ausstehend \\
+    6  & Brightpass (Bloom Extract)       & Ausstehend \\
+    7  & Bloom Vertical                   & Ausstehend \\
+    8  & Bloom Horizontal + Reconstitute  & Ausstehend \\
+    9  & Bloom Approximation              & Ausstehend \\
+    10 & Fake-Bloom Variant A             & Ausstehend \\
+    11 & Fake-Bloom Variant B             & Ausstehend \\
+    12 & Geometry + AA                    & Ausstehend \\
+    13 & Final Output                     & Ausstehend \\
+    \bottomrule
+\end{tabular}
+\rowcolors{0}{}{} 
+\caption{Pass-Portierungsstatus}
+\end{table}
+\newpage \vspace*{-.5cm}
+% =============================================================================
+\section{Muss- und Kann-Kriterien}
+% =============================================================================
+\vspace{.55cm}
+
+\textbf{Muss-Kriterien:} \vspace{.25cm}
+\begin{enumerate}[label={\textbf{\color{hkared}M\arabic*}}, nosep]
+    \item Vollst\"andige Portierung aller 13 Passes nach MSL. \\
+    \item Lauff\"ahige Integration in RetroVisor als w\"ahlbarer Shader. \\
+    \item Echtzeit-F\"ahigkeit: $\geq 30$\,FPS bei 1080p-Eingabe. \\
+    \item Visuell korrekte Darstellung der CRT-Kerneffekte (Scanlines, Maske, Gamma). \\
+    \item Dokumentierte Vergleichsbilder (GLSL-Original vs.\ MSL-Port). \\
+    \item Quellcode unter Open-Source-Lizenz auf GitHub verf\"ugbar.
+\end{enumerate}
+
+\vspace{.75cm}
+\textbf{Kann-Kriterien:} \vspace{.25cm}
+\begin{enumerate}[label={\textbf{\color{hkared}K\arabic*}}, nosep]
+    \item $\geq 60$\,FPS bei 1080p (optimiert f\"ur Apple Silicon). \\
+    \item Alle $\sim$45 Parameter \"uber RetroVisor-UI konfigurierbar. \\
+    \item SSIM $> 0.95$ gegen\"uber dem GLSL-Original. \\
+    \item Unterst\"utzung aller drei Phosphormasken-Typen. \\
+    \item \texttt{half}-Pr\"azisions-Variante f\"ur reduzierte GPU-Last. \\
+    \item Performance-Vergleich mit CRT-Easy als Baseline.
+\end{enumerate}
+
+% =============================================================================
+\newpage \vspace*{-.75cm}
+\section{Glossar}
+% =============================================================================
+\vspace{.25cm}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{hkared!5}{white}
+\begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \tableheadercolor \thw{Begriff} & \thw{Definition} \\
+    \midrule
+    CRT & Cathode Ray Tube -- R\"ohrenbildschirm \\
+    MSL & Metal Shading Language -- Apples GPU-Programmiersprache \\
+    GLSL & OpenGL Shading Language -- plattform\"ubergreifende GPU-Sprache \\
+    Slang & Shader-Format der libretro-Sammlung (GLSL-basiert) \\
+    Compute Shader & GPU-Programm ohne Bindung an die Grafikpipeline \\
+    Kernel & Metal-Bezeichnung f\"ur eine Compute-Shader-Funktion \\
+    Threadgroup & Gruppe von GPU-Threads, die gemeinsam ausgef\"uhrt werden \\
+    Scanline & Horizontale Bildzeile eines CRT-Monitors \\
+    Phosphormaske & RGB-Subpixel-Anordnung auf der CRT-Bildschirmfl\"ache \\
+    Bloom & Licht\"uberstrahlung (Glow) um helle Bildbereiche \\
+    Halation & Lichtstreuung durch die Glasscheibe des CRT-Monitors \\
+    Interlacing & Halbbildverfahren (gerade/ungerade Zeilen alternierend) \\
+    Bob Deinterlacing & Deinterlacing durch abwechselnde Halbbild-Anzeige \\
+    Gamma & Nichtlineare Helligkeitskurve ($\text{Helligkeit} = \text{Signal}^\gamma$) \\
+    Konvergenz & Ausrichtung der drei Elektronenstrahlen (R, G, B) \\
+    Lanczos & Hochwertiges Resampling-Verfahren (Sinc-basiert) \\
+    SSIM & Structural Similarity Index -- Qualit\"atsmetrik f\"ur Bilder \\
+    $\Delta E$ & Wahrnehmungsbasierte Farbdifferenz (CIE-Farbraum) \\
+    RetroVisor & macOS-App f\"ur GPU-basierte Echtzeit-Bildeffekte \\
+    libretro & API-Standard f\"ur Emulator-Frontends (RetroArch) \\
+    \bottomrule
+\end{tabularx}
+\rowcolors{0}{}{} \vspace{.125cm}
+\caption{Glossar}
+\end{table}
+
+\end{document}
