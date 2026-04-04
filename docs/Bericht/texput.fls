@@ -1,0 +1,5 @@
+PWD /Users/snow/Documents/Master/1. Semester/Module/Software      Projekt/crt-royale-msl/docs/Bericht
+INPUT /usr/local/texlive/2022/texmf.cnf
+INPUT /usr/local/texlive/2022/texmf-dist/web2c/texmf.cnf
+INPUT /usr/local/texlive/2022/texmf-var/web2c/pdftex/pdflatex.fmt
+OUTPUT texput.log

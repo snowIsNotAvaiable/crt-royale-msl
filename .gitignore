@@ -10,5 +10,6 @@ DerivedData/
 *.air
 *.metallib
 
-# Generated documentation
-docs/
+# Documentation (nur Markdown-Docs ignorieren, Bericht behalten)
+docs/*.md
+docs/Timeline/
