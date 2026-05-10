@@ -714,6 +714,26 @@ geschrieben. \texttt{<N>} entspricht dem aktiven \texttt{debug\_pass\_index}.
 \vspace{.25cm}
 \textbf{Validierungs-Workflow.} Die exportierten PNGs sind die Eingabe f\"ur das geplante Vergleichsskript \texttt{crt-royale-msl/tools/compare.py}, das pro Pass eine $\Delta E_{2000}$-Heatmap, SSIM und Kanal-Histogramme gegen RetroArch-Referenz-Snapshots berechnet (Implementation in der n\"achsten Iteration).
 
+\vspace{.5cm}
+\subsection{Headless Validierungs-Pipeline}
+\vspace{.5cm}
+F\"ur eine reproduzierbare, GUI-freie \"Uberpr\"ufung der Pipeline existiert eine Test-Harness unter \texttt{crt-royale-msl/tests/}. Sie erlaubt es, jede Code\"anderung mit einem einzigen Befehl gegen ein festes Set deterministischer Eingabebilder zu validieren -- ohne RetroVisor zu starten und ohne den Emulator zu \"offnen.
+
+\vspace{.25cm}
+\textbf{Komponenten:}
+\begin{itemize}[leftmargin=*, nosep]
+    \item \textbf{Test-Input-Generator} (\texttt{tests/inputs/generate.py}): Erzeugt $256\times192$ PNG-Patterns -- Color Bars, horizontaler Gradient, 16-Pixel-Grid, horizontale Linien, Solid White/Gray/Black. \\
+    \item \textbf{Swift-Runner} (\texttt{tests/SwiftRunner/}, eigenst\"andiges Swift Package): L\"adt eine PNG-Eingabe, kompiliert \texttt{CrtRoyale.metal} zur Laufzeit (\texttt{device.makeLibrary(source:)}), spiegelt die \texttt{Uniforms}-Struct, f\"ahrt die komplette Pipeline und dumpt pro Pass einen PNG-Snapshot. \\
+    \item \textbf{Python-Analyzer} (\texttt{tools/analyze.py}): Statistische Plausibilit\"atschecks pro Pass. F\"ur jeden Test-Input pr\"uft er Wertebereiche, Round-Trip-Identit\"at, Ordnungserhaltung, Scanline-Struktur (Y-Hochfrequenzenergie) und X-Uniformit\"at auf Solids. \\
+    \item \textbf{Master-Skript} (\texttt{tests/validate.sh}): Generiert Inputs, baut den Runner, f\"ahrt zwei Modi (neutral: $\gamma_{CRT}=\gamma_{LCD}=2.2$ f\"ur Round-Trip-Identit\"at; default: $\gamma_{CRT}=2.5,\gamma_{LCD}=2.2$ f\"ur Gamma-Simulation), ruft den Analyzer auf, exit-codet bei Fail.
+\end{itemize}
+
+\vspace{.25cm}
+\textbf{Y-Upscale.} Pass~2 produziert nur dann sichtbare Scanlines, wenn die Output-Aufl\"osung gr\"o\ss er als die Quellaufl\"osung ist (\texttt{pixel\_height} = video.y / output.y mu\ss\ deutlich $<1$ sein). Der Runner skaliert deshalb die Output-Textur um Faktor 4 in Y-Richtung -- entsprechend einem typischen Display-Setup, bei dem etwa 240 Quellzeilen auf 768+ Display-Zeilen abgebildet werden.
+
+\vspace{.25cm}
+\textbf{Aktueller Stand:} 59 / 59 Sanity-Checks gr\"un (Stand dieser Iteration). Eine Code\"anderung, die einen Pass bricht, schl\"agt typischerweise sofort in mindestens einem dieser Checks zu. Visuelle Verifikation der Scanline-Form ist \"uber das direkte Anschauen der \texttt{tests/outputs/}-PNGs m\"oglich (Pass-2-Snapshots zeigen die charakteristische horizontale Streifenstruktur eines CRT).
+
 \newpage \vspace*{-.5cm}
 \subsection{Dateien im Projekt}
 \vspace{.25cm}
@@ -730,6 +750,10 @@ geschrieben. \texttt{<N>} entspricht dem aktiven \texttt{debug\_pass\_index}.
     \texttt{RetroVisor/Shaders/ShaderLibrary.swift} & Registrierung als 3. Shader \\
     \texttt{crt-royale-msl/src/CrtRoyalePass1Linearize.metal} & Standalone-Mirror Pass 1 \\
     \texttt{crt-royale-msl/src/CrtRoyalePass2VerticalScanlines.metal} & Standalone-Mirror Pass 2 \\
+    \texttt{crt-royale-msl/tests/SwiftRunner/} & Headless Validierungs-Runner (Swift Package) \\
+    \texttt{crt-royale-msl/tests/inputs/generate.py} & Generator deterministischer Test-PNG \\
+    \texttt{crt-royale-msl/tests/validate.sh} & Master-Skript der Pipeline (Build $\rightarrow$ Run $\rightarrow$ Analyze) \\
+    \texttt{crt-royale-msl/tools/analyze.py} & Statistischer Pass-Analyzer (Sanity-Checks) \\
     \texttt{crt-royale-msl/tools/compare.py} & Slot f\"ur Pixel-Diff-Skript (geplant) \\
     \bottomrule
 \end{tabularx}

@@ -13,3 +13,14 @@ DerivedData/
 # Documentation (nur Markdown-Docs ignorieren, Bericht behalten)
 docs/*.md
 docs/Timeline/
+
+# Swift Package build artifacts (regenerable via tests/validate.sh)
+.build/
+.swiftpm/
+Package.resolved
+
+# Validation pipeline runtime artifacts (regenerable):
+#   - inputs/*.png are produced by tests/inputs/generate.py
+#   - outputs/  is produced by tests/validate.sh
+tests/inputs/*.png
+tests/outputs/
