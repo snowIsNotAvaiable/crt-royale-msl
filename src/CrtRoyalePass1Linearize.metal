@@ -43,14 +43,19 @@ namespace crt_royale {
 
     // -----------------------------------------------------------------------
     // Helper: Is the source interlaced?
-    // CRT-Royale considers a source interlaced if vertical resolution > 288
-    // (or > 1000 when interlace_1080i is enabled, to detect 1080i content).
+    // Aligned with the slang reference (scanline-functions.h:540-567):
+    //   SD interlace band: 288.5 < lines < 576.5  (NTSC 480i, PAL 576i)
+    //   HD interlace band: 1079.5 < lines < 1080.5, only when interlace_1080i
+    //
+    // This must match Pass 2's is_interlaced exactly -- otherwise progressive
+    // and interlaced classification can disagree between passes and produce
+    // visible jitter. See CrtRoyale.metal for the canonical definition.
     // -----------------------------------------------------------------------
-    inline bool is_interlaced(float video_height, uint interlace_1080i) {
-        // Standard interlacing threshold from scanline-functions.h
-        // A typical PAL field is 288 lines, NTSC is 240. Full-frame is double.
-        float min_lines = (interlace_1080i == 1) ? 1000.0 : 288.0;
-        return video_height > min_lines;
+    inline bool is_interlaced(float num_lines, uint interlace_1080i) {
+        bool sd = (num_lines > 288.5) && (num_lines < 576.5);
+        bool hd = (interlace_1080i == 1) &&
+                  (num_lines > 1079.5) && (num_lines < 1080.5);
+        return sd || hd;
     }
 
     // -----------------------------------------------------------------------
