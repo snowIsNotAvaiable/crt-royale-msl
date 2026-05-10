@@ -82,7 +82,8 @@ def analyze_pattern(name: str, dir: Path, rep: Report, mode: str) -> None:
         "input": dir / "00-input.png",
         "pass1": dir / "01-pass1.png",
         "pass2": dir / "02-pass2.png",
-        "final": dir / "03-final.png",
+        "pass3": dir / "03-pass3.png",
+        "final": dir / "04-final.png",
     }
     for k, p in files.items():
         if not p.exists():
@@ -92,6 +93,7 @@ def analyze_pattern(name: str, dir: Path, rep: Report, mode: str) -> None:
     inp   = load(files["input"])
     pass1 = load(files["pass1"])
     pass2 = load(files["pass2"])
+    pass3 = load(files["pass3"])
     final = load(files["final"])
 
     h_in, w_in = inp.shape[:2]
@@ -117,6 +119,9 @@ def analyze_pattern(name: str, dir: Path, rep: Report, mode: str) -> None:
     rep.check("pass2 values in [0,255]",
               0 <= int(pass2.min()) and int(pass2.max()) <= 255,
               f"min={int(pass2.min())} max={int(pass2.max())}")
+    rep.check("pass3 values in [0,255]",
+              0 <= int(pass3.min()) and int(pass3.max()) <= 255,
+              f"min={int(pass3.min())} max={int(pass3.max())}")
 
     # Pass 1 round-trip vs input.
     if mode == "neutral":
@@ -194,6 +199,55 @@ def analyze_pattern(name: str, dir: Path, rep: Report, mode: str) -> None:
             rep.check("pass2 adds scanlines on Y-uniform source",
                       True,
                       f"skipped: source has existing Y-structure (Y-energy={y_e_in_source:.1f})")
+
+    # --- Pass 3 / mask checks ---
+    # Pass 3 multiplies pass-2 by a procedural aperture grille (3-px triad,
+    # one R/G/B subpixel per pixel column). Expectation: pass 3 introduces
+    # strong X-direction structure (per-channel periodicity) that wasn't
+    # there in pass 2.
+    if name == "solid_black":
+        rep.check("pass3 stays dark on solid_black",
+                  int(pass3.max()) < 8, f"max={int(pass3.max())}")
+    else:
+        # The aperture-grille mask quintessentially adds X-direction subpixel
+        # structure. Skip the energy-delta test when the input already had
+        # heavy X-variation (color bars, anything channel-checkered) -- the
+        # mask multiplies into that variation rather than dominating it.
+        # The "RGB triad pattern is consistent" check below is the stronger
+        # invariant and runs unconditionally on near-solid inputs.
+        x_e_p2 = x_high_freq_energy(pass2)
+        x_e_p3 = x_high_freq_energy(pass3)
+        if x_e_p2 < 10.0:
+            rep.check("pass3 introduces subpixel X-structure",
+                      x_e_p3 > x_e_p2 + 5.0,
+                      f"X-energy: pass2={x_e_p2:.1f} -> pass3={x_e_p3:.1f}")
+        else:
+            rep.check("pass3 introduces subpixel X-structure",
+                      True,
+                      f"skipped: pass2 already has X-structure ({x_e_p2:.1f})")
+
+        # Triad period: with default mask_triad_size=3, expect peak structure
+        # at exactly 3-pixel period in X. Each color channel should peak in
+        # one specific column-mod-3 bucket. Use solid-ish inputs to validate.
+        if name in {"solid_white", "solid_gray"}:
+            # Pick the brightest row (avoid scanline gaps), then check that
+            # column index mod 3 controls which channel dominates.
+            row_brightness = pass3.astype(np.float32).sum(axis=2).mean(axis=1)
+            best_y = int(np.argmax(row_brightness))
+            row = pass3[best_y]  # shape (W, 3)
+            ch_dominant = np.argmax(row, axis=1)  # 0=R, 1=G, 2=B per column
+            # In each col-mod-3 bucket, check the dominant channel is consistent.
+            consistent = True
+            for bucket in range(3):
+                vals = ch_dominant[bucket::3]
+                # Most common channel in this bucket should hold > 80%.
+                counts = np.bincount(vals, minlength=3)
+                if counts.max() / counts.sum() < 0.8:
+                    consistent = False
+                    break
+            rep.check("pass3 RGB triad pattern is consistent",
+                      consistent,
+                      f"row {best_y}: bucket dominance >= 80%")
 
 
 def main() -> int:

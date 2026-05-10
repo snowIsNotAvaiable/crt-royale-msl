@@ -515,7 +515,7 @@ Bei CRT-Royale bedeutet dies: \textbf{13 Kernel-Dispatches pro Frame}, mit 12 Zw
     Quellformat & Slang / GLSL & CRT-Royale-Originalformat in der \newline libretro-Shader-Sammlung \\
     Versionskontrolle & Git / GitHub & Kollaboration und Nachvollziehbarkeit \\
     Testquelle & OpenEmu + 240p Test Suite & NES-Emulator mit standardisierten \newline Testmustern f\"ur Shader-Validierung \\
-    Referenz & RetroArch (GLSL) & Originaldarstellung zum visuellen Vergleich \\
+    Referenz & \texttt{librashader-cli} (Slang) & Slang-Original via Metal-Backend (Per-Pass-Snapshots) \\
     \bottomrule
 \end{tabularx}
 \rowcolors{0}{}{}
@@ -692,6 +692,60 @@ inline float3 scanline_generalized_gaussian_sampled_contrib(
 \end{lstlisting}
 
 \vspace{.5cm}
+\subsection{Pass~3 -- Phosphor-Maske (vereinfacht)}
+\vspace{.5cm}
+Pass~3 multipliziert das vertikale Scanline-Bild mit einer RGB-Aperture-Grille. Damit wird Licht in diskrete Subpixel-Streifen gegateted -- der charakteristische Phosphor-Effekt eines CRT-Bildschirms.
+
+\vspace{.5cm}
+\textbf{Mapping zur Slang-Referenz.} Pass~3 in unserer MSL-Pipeline entspricht funktional Slang-Pass~7 (\texttt{crt-royale-scanlines-horizontal-apply-mask.slang}). Slang-Passes 2--6 (\texttt{BLOOM\_APPROX}, \texttt{HALATION\_BLUR} V/H, \texttt{MASK\_RESIZE} V/H) sind in dieser Iteration noch nicht portiert -- ihre Beitr\"age zur Slang-Referenz fallen weg, weil die Default-Parameter (\texttt{halation\_weight}=0, \texttt{PHOSPHOR\_BLOOM\_FAKE} aus, \texttt{mask\_sample\_mode}=1) genau diesen Code-Pfad ergeben.
+
+\vspace{.5cm}
+\textbf{Vereinfachungen gegen\"uber dem Slang-Original.} Bewusst weggelassen, mit TODO-Kommentaren im Quellcode markiert:
+\begin{itemize}[leftmargin=*, nosep]
+    \item Horizontale Beam-Filterung (\texttt{sample\_rgb\_scanline\_horizontal} mit Quilez/Lanczos2): direkt linear gesampelt. \\
+    \item Konvergenzversatz \texttt{convergence\_offset\_x\_\{r,g,b\}}: auf 0 fixiert. \\
+    \item Halation-Komponente: nicht aktiv (Pass 3+4 der Slang-Pipeline noch nicht portiert). \\
+    \item Slot-Mask und Shadow-Mask: erfordern PNG-LUT-Loader; auf Aperture-Grille beschr\"ankt. \\
+    \item Lanczos-resized LUT (Slang-Passes 5+6): durch direkte prozedurale Erzeugung ersetzt.
+\end{itemize}
+
+\vspace{.5cm}
+\textbf{Prozedurale Aperture-Grille.} Statt eine externe LUT-Textur zu laden, erzeugt der Kernel die Maske direkt mathematisch: Jede RGB-Triade ist \texttt{mask\_triad\_size} Output-Pixel breit (Default 3) und enth\"alt je eine R-, G-, B-Subpixel-Spalte. Da das Mask-Mittel etwa $1/3$ ist, multipliziert der Kernel mit \texttt{mask\_amplify} ($\sim 3.0$), um die globale Helligkeit zu erhalten. F\"ur Slot- und Shadow-Mask ist das prozedurale Verfahren nicht geeignet (2D-Pattern); diese kommen mit dem LUT-Loader in einer sp\"ateren Iteration.
+
+\vspace{.5cm}
+\begin{lstlisting}[language=Metal, caption={Pass~3 -- Apply-Mask-Kernel (Aperture-Grille, prozedural)}]
+kernel void pass3_apply_mask(
+    texture2d<float, access::sample> input  [[ texture(0) ]],
+    texture2d<float, access::write>  output [[ texture(1) ]],
+    constant Uniforms& u                    [[ buffer(0)  ]],
+    sampler sam                             [[ sampler(0) ]],
+    uint2   gid                             [[ thread_position_in_grid ]])
+{
+    if (gid.x >= output.get_width() ||
+        gid.y >= output.get_height()) return;
+
+    float2 uv = (float2(gid) + 0.5f) /
+                float2(output.get_width(), output.get_height());
+    float3 scanline_color = input.sample(sam, uv).rgb;
+
+    float triad_size = max(u.mask_triad_size, 1.0f);
+    float subpixel_pos = fmod(float(gid.x), triad_size) *
+                        (3.0f / triad_size);
+
+    float3 mask = float3(0.0f);
+    if      (subpixel_pos < 1.0f) mask.r = 1.0f;
+    else if (subpixel_pos < 2.0f) mask.g = 1.0f;
+    else                          mask.b = 1.0f;
+
+    float3 phosphor = scanline_color * mask * u.mask_amplify;
+    output.write(float4(phosphor, 1.0f), gid);
+}
+\end{lstlisting}
+
+\vspace{.5cm}
+\textbf{Validierung.} Die Headless-Pipeline pr\"uft nach jeder Pass-3-Ausf\"uhrung zwei mask-spezifische Invarianten: (1) X-Hochfrequenzenergie steigt deutlich (Subpixel-Streifen) f\"ur near-solid-Inputs, (2) RGB-Triade ist konsistent -- in jedem $x \bmod 3$-Bucket dominiert dieselbe Farbkomponente in $\geq 80\%$ der Spalten. Visuelle Verifikation erfolgt durch direktes Anschauen der Snapshot-PNGs (Color Bars zeigen pro Bar nur die in der Quelle aktiven Subpixel-Komponenten -- wei\ss e Bar alle drei, rote Bar nur R, etc.).
+
+\vspace{.5cm}
 \subsection{Debug-Pipeline}
 \vspace{.5cm}
 Die schrittweise Validierung der 13-Pass-Pipeline ben\"otigt eine M\"oglichkeit, Zwischen-Ergebnisse einzelner Passes auf den Bildschirm zu bringen. Daf\"ur wurde ein \texttt{debug\_pass\_index}-Uniform eingef\"uhrt sowie ein UI-Picker \texttt{Debug -> Show Pass} mit den Optionen \texttt{Final}, \texttt{Pass 1 (Linearize)}, \texttt{Pass 2 (Scanlines V)}.
@@ -732,7 +786,92 @@ F\"ur eine reproduzierbare, GUI-freie \"Uberpr\"ufung der Pipeline existiert ein
 \textbf{Y-Upscale.} Pass~2 produziert nur dann sichtbare Scanlines, wenn die Output-Aufl\"osung gr\"o\ss er als die Quellaufl\"osung ist (\texttt{pixel\_height} = video.y / output.y mu\ss\ deutlich $<1$ sein). Der Runner skaliert deshalb die Output-Textur um Faktor 4 in Y-Richtung -- entsprechend einem typischen Display-Setup, bei dem etwa 240 Quellzeilen auf 768+ Display-Zeilen abgebildet werden.
 
 \vspace{.25cm}
-\textbf{Aktueller Stand:} 59 / 59 Sanity-Checks gr\"un (Stand dieser Iteration). Eine Code\"anderung, die einen Pass bricht, schl\"agt typischerweise sofort in mindestens einem dieser Checks zu. Visuelle Verifikation der Scanline-Form ist \"uber das direkte Anschauen der \texttt{tests/outputs/}-PNGs m\"oglich (Pass-2-Snapshots zeigen die charakteristische horizontale Streifenstruktur eines CRT).
+\textbf{Aktueller Stand:} 75 / 75 Sanity-Checks gr\"un (drei Passes implementiert; pro Pass kommen 2--4 weitere Invarianten hinzu). Eine Code\"anderung, die einen Pass bricht, schl\"agt typischerweise sofort in mindestens einem dieser Checks zu. Visuelle Verifikation der Scanline- und Phosphormaske-Form ist \"uber das direkte Anschauen der \texttt{tests/outputs/}-PNGs m\"oglich.
+
+\vspace{.5cm}
+\subsection{Vergleichswerkzeug \texttt{compare.py}}
+\vspace{.5cm}
+Die headless Pipeline beweist nur \emph{Selbstkonsistenz} -- sie sagt nichts dar\"uber aus, wie nah unsere MSL-Portierung am GLSL-Original liegt. Diese Aussage trifft das eigenst\"andige Vergleichswerkzeug \texttt{crt-royale-msl/tools/compare.py}. Es nimmt zwei Snapshot-PNGs (typischerweise unsere MSL-Ausgabe und ein RetroArch-Referenzbild) und berechnet drei perzeptuelle bzw.\ numerische Metriken:
+
+\vspace{.25cm}
+\begin{itemize}[leftmargin=*, nosep]
+    \item \textbf{$\Delta E_{2000}$} -- Wahrnehmungsbasierte Farbdifferenz im CIELAB-Farbraum (CIE 2000-Formel). Skalenanker:
+        \begin{itemize}[nosep]
+            \item $< 1$: nicht wahrnehmbar
+            \item $1\dots 2$: wahrnehmbar bei genauem Hinschauen
+            \item $2\dots 10$: deutlich wahrnehmbar
+            \item $> 10$: klar verschieden
+        \end{itemize}
+    \item \textbf{SSIM (Structural Similarity Index)} -- Strukturelle \"Ahnlichkeit (1.0 = identisch).
+    \item \textbf{RGB-MSE / Max-Diff} -- Numerischer Sanity-Check, robust gegen perzeptuelle Annahmen.
+\end{itemize}
+
+\vspace{.25cm}
+\textbf{Ausgabe.} Standardm\"a\ss ig JSON auf Stdout (Mean / P50 / P95 / P99 / Max von $\Delta E$, SSIM, MSE, Max-Diff). Optional schreibt das Tool eine \texttt{$\Delta E$-Heatmap}: schwarz $=$ identisch, hellrot $\to$ stark abweichend ($\geq 10$). Damit ist auf einen Blick erkennbar, \emph{wo} im Bild die Differenzen liegen (z.\,B.\ nur Mid-Tones $=$ Gamma-Mismatch; nur Subpixel-R\"ander $=$ Mask-Phasenversatz).
+
+\vspace{.25cm}
+\textbf{Self-Tests.} Korrektheit der Implementierung wurde \"uber drei Self-Tests verifiziert:
+\begin{enumerate}[leftmargin=*, nosep]
+    \item Identische Inputs $\to$ $\Delta E = 0$, SSIM $= 1.0$.
+    \item Neutral-Mode vs.\ Default-Mode auf Gradient $\to$ $\Delta E$ mean $= 2.46$ (gerade wahrnehmbarer Gamma-Mismatch). Heatmap zeigt deutlich: Mid-Tones rot, Extremwerte schwarz.
+    \item Verschiedene Patterns (Gradient vs.\ Solid-White) $\to$ $\Delta E$ mean $= 28.97$ (klar verschieden).
+\end{enumerate}
+
+\vspace{.25cm}
+\textbf{Workflow.} Das Werkzeug bildet die Br\"ucke zur Phase-3-Validierung gegen die Slang-Referenz. Reference-Snapshots werden \"uber \texttt{librashader-cli} produziert (siehe Folge-Subsection); sie sind die Eingabe f\"ur \texttt{compare.py}, das pro \mbox{(Input, Pass)}-Tupel JSON-Stats und eine Heatmap schreibt. \texttt{validate.sh} ruft den Vergleich automatisch auf, sobald Referenz-Snapshots existieren.
+
+\vspace{.5cm}
+\subsection{Reference-Pipeline via \texttt{librashader-cli}}
+\vspace{.5cm}
+Urspr\"unglich war geplant, RetroArch auf das Original-Preset \texttt{crt-royale.slangp} laufen zu lassen und dort Per-Pass-Snapshots zu greifen. Zwei Probleme machten den Weg unpraktikabel: (1) der Image-Display-Core (n\"otig, um eigene Test-PNGs als ``Spiel'' zu laden) wird f\"ur macOS nicht mehr ausgeliefert; (2) RetroArch hat keine eingebaute Per-Pass-Snapshot-Funktion -- intermediate Framebuffer sind nur \"uber Apitrace-Hacks oder Custom-Patches zug\"anglich.
+
+L\"osung: \texttt{librashader-cli} aus dem \texttt{librashader}-Projekt (Snowflake\-Powered\slash librashader) -- die Rust-Reimplementation der Slang-Shader-Pipeline, die mittlerweile auch von RetroArch selbst genutzt wird. Sie l\"auft auf Metal als nativem Backend, nimmt PNG rein und schreibt PNG raus, und exposed intermediate Stages \"uber den Schalter \verb|--passes-enabled N|.
+
+\vspace{.25cm}
+\textbf{Aufruf.} F\"ur jeden Test-Input und vier Vergleichs-Stages (\texttt{1}, \texttt{2}, \texttt{8}, \texttt{12} aktivierte Passes -- entsprechend unseren eigenen Stages \texttt{pass1}, \texttt{pass2}, \texttt{pass3}, \texttt{final}):
+\begin{verbatim}
+librashader-cli render \
+    --preset    vendor/slang-shaders/crt/crt-royale.slangp \
+    --image     tests/inputs/colorbars.png \
+    --out       tests/reference/colorbars/02-pass2.png \
+    --dimensions 256x768 \
+    --passes-enabled 2 \
+    --runtime metal
+\end{verbatim}
+Das Skript \texttt{tests/capture\_reference.sh} kapselt diesen Aufruf in einer Schleife \"uber alle 8 Test-Inputs $\times$ 4 Stages und schreibt 32 Reference-PNGs nach \texttt{tests/reference/<pattern>/}.
+
+\vspace{.25cm}
+\textbf{Erste \(\Delta E\)-Messung.} Tabelle \ref{tab:dE-first} zeigt die mittlere $\Delta E_{2000}$-Differenz unserer MSL-Pipeline-Outputs gegen die librashader-Referenz f\"ur drei Beispiel-Patterns. Befund:
+\begin{itemize}[leftmargin=*, nosep]
+    \item \texttt{solid\_black}: $\Delta E = 0.00$ \"uber alle Stages -- beide Pipelines erhalten Schwarz exakt.
+    \item \texttt{pass2} (Vertical Scanlines): mittlere $\Delta E = 13$--$19$ auf nicht-trivialen Inputs. Visueller Vergleich der Snapshots zeigt, dass beide Pipelines strukturell korrekt arbeiten (Scanlines pr\"asent, Farben + Triadenausrichtung gleich), aber unsere Beam-Modulation ist \emph{zu weich}: die dunklen L\"ucken zwischen Scanlines sind in unserer Ausgabe deutlich heller als in der Referenz. Das ist der erste konkrete Befund f\"ur die n\"achste Iteration -- entweder Beam-Defaults justieren oder die Contribution-Math gegen die Slang-Quelle neu abgleichen.
+    \item \texttt{pass3} und \texttt{final}: mittlere $\Delta E = 30$--$50$. Erwartete Divergenz: pass3 nutzt bei uns eine prozedurale Aperture-Grille, die Referenz lookup-basierte Mask-LUTs; \texttt{final} fehlen uns Slang-Passes 2--6 (Bloom-Approx + Halation V/H + Mask-Resize), 8--10 (Brightpass + Bloom V/H) und 11 (Geometry/AA).
+\end{itemize}
+
+\vspace{.25cm}
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{hkared!5}{white}
+\begin{tabularx}{\textwidth}{llrrrr}
+    \toprule
+    \tableheadercolor \thw{Pattern} & \thw{Stage} & \thw{$\overline{\Delta E_{2000}}$} & \thw{P95} & \thw{Max} & \thw{SSIM} \\
+    \midrule
+    colorbars   & pass2  & 13.60 & 26.72 & 28.98 & 0.930 \\
+    colorbars   & pass3  & 32.26 & 86.41 & 89.72 & 0.462 \\
+    colorbars   & final  & 41.44 & 90.58 & 101.19 & 0.045 \\
+    gradient    & pass2  & 14.21 & 27.60 & 29.47 & 0.471 \\
+    gradient    & pass3  & 31.62 & 84.01 & 89.56 & 0.047 \\
+    gradient    & final  & 29.21 & 59.05 & 87.87 & 0.198 \\
+    solid\_black & pass2 &  0.00 &  0.00 &  0.00 & 1.000 \\
+    solid\_black & pass3 &  0.00 &  0.00 &  0.00 & 1.000 \\
+    solid\_black & final &  0.00 &  0.00 &  0.00 & 1.000 \\
+    \bottomrule
+\end{tabularx}
+\rowcolors{0}{}{} \vspace{.25cm}
+\caption{Erste $\Delta E_{2000}$-Vergleichswerte gegen das Slang-Original (Auszug).}
+\label{tab:dE-first}
+\end{table}
 
 \newpage \vspace*{-.5cm}
 \subsection{Dateien im Projekt}
@@ -754,7 +893,9 @@ F\"ur eine reproduzierbare, GUI-freie \"Uberpr\"ufung der Pipeline existiert ein
     \texttt{crt-royale-msl/tests/inputs/generate.py} & Generator deterministischer Test-PNG \\
     \texttt{crt-royale-msl/tests/validate.sh} & Master-Skript der Pipeline (Build $\rightarrow$ Run $\rightarrow$ Analyze) \\
     \texttt{crt-royale-msl/tools/analyze.py} & Statistischer Pass-Analyzer (Sanity-Checks) \\
-    \texttt{crt-royale-msl/tools/compare.py} & Slot f\"ur Pixel-Diff-Skript (geplant) \\
+    \texttt{crt-royale-msl/tools/compare.py} & Pixel-Diff: $\Delta E_{2000}$ + SSIM + Heatmap \\
+    \texttt{crt-royale-msl/tests/capture\_reference.sh} & Reference-Snapshots via \texttt{librashader-cli} \\
+    \texttt{crt-royale-msl/tests/compare\_all.sh} & Batch-Diff aller (Pattern, Pass)-Tupel \\
     \bottomrule
 \end{tabularx}
 \rowcolors{0}{}{} \vspace{.25cm}
@@ -768,15 +909,15 @@ F\"ur eine reproduzierbare, GUI-freie \"Uberpr\"ufung der Pipeline existiert ein
 
 \subsection{Methodik}
 \vspace{.5cm}
-Die Validierung erfolgt durch \textbf{visuellen A/B-Vergleich} zwischen dem GLSL-Original \newline (in RetroArch) und der MSL-Portierung (in RetroVisor) -- und zwar \textbf{pro Pass}, nicht nur am Pipeline-Ende:
+Die Validierung erfolgt durch \textbf{quantitativen Per-Pass-Vergleich} zwischen dem Slang-Original und unserer MSL-Portierung. Beide Pipelines bekommen exakt dieselben Test-PNGs als Input; die Original-Pipeline l\"auft via \texttt{librashader-cli} (Metal-Backend), unsere via dem headless SwiftRunner. Die Snapshot-Stages \texttt{pass1}, \texttt{pass2}, \texttt{pass3}, \texttt{final} werden \"uber \verb|--passes-enabled| an den Stellen abgegriffen, an denen unsere reduzierte Pipeline \"aquivalente Berechnungen liefert.
 \vspace{.25cm}
 \begin{enumerate}[nosep]
-    \item Identisches Eingabebild verwenden (240p Test Suite, definierte Testmuster) \\
-    \item Identische Parameter-Einstellungen (crt\_gamma, lcd\_gamma, mask\_type, etc.) \\
-    \item Per-Pass-Snapshot in RetroVisor \"uber den Debug-Picker + Save Snapshot \\
-    \item Korrespondierender Snapshot der gleichen Stufe aus RetroArch \\
-    \item Pixel-f\"ur-Pixel-Differenzbild via \texttt{tools/compare.py} berechnen \\
-    \item Akzeptanzkriterium: $\Delta E < 2.0$ (kaum sichtbarer Unterschied)
+    \item Identische Eingabebilder f\"ur beide Pipelines (\texttt{tests/inputs/*.png}, deterministisch generiert)
+    \item Identische Parameter-Defaults (crt\_gamma, lcd\_gamma, mask\_type, etc.)
+    \item Beide Pipelines schreiben ihre Per-Pass-Snapshots nach getrennten Verzeichnis-B\"aumen
+    \item Pixel-Differenz pro (Input, Pass) via \texttt{tools/compare.py} ($\Delta E_{2000}$ + SSIM + Heatmap)
+    \item \texttt{tests/compare\_all.sh} aggregiert die Ergebnisse zu einer Tabelle pro Mode
+    \item Akzeptanzkriterium: mittlerer $\Delta E_{2000} < 2.0$ (kaum sichtbarer Unterschied) f\"ur jeden portierten Pass
 \end{enumerate}
 
 \vspace{.5cm}
@@ -842,7 +983,7 @@ Die \textbf{240p Test Suite} (NES-ROM) bietet standardisierte Testbilder:
     \midrule
     1 & Portierung & \"Ubersetzung aller 13 Passes GLSL $\rightarrow$ MSL & In Arbeit \\
     2 & Integration & Einbindung in RetroVisor, UI-Settings, Texturen & Begonnen \\
-    3 & Validierung & A/B-Vergleich mit RetroArch, Comparison-Images & Ausstehend \\
+    3 & Validierung & Per-Pass-Vergleich mit \texttt{librashader-cli}-Reference & In Arbeit (erste $\Delta E$-Werte vorliegen) \\
     4 & Evaluierung & SSIM, $\Delta E$, Frame-Time, GPU-Profiling & Ausstehend \\
     \bottomrule
 \end{tabular}
@@ -861,9 +1002,11 @@ Die \textbf{240p Test Suite} (NES-ROM) bietet standardisierte Testbilder:
     \midrule
     1  & Linearize + Bob Fields          & \checkmark ~Abgeschlossen \\
     2  & Vertical Scanlines (Beam)       & \checkmark ~Abgeschlossen \\
-    3  & Mask Resize Horizontal           & Ausstehend \\
-    4  & Mask Resize Vertical             & Ausstehend \\
-    5  & Scanlines + Mask Apply           & Ausstehend \\
+    3  & Apply Phosphor Mask (vereinfacht, prozedural) & \checkmark ~Abgeschlossen \\
+    4  & Bloom Approx (320$\times$240 Resize)        & Ausstehend \\
+    5  & Halation Blur Vertical/Horizontal           & Ausstehend \\
+    6  & Mask Resize Vertical (Lanczos)              & Ausstehend \\
+    7  & Mask Resize Horizontal (Lanczos)            & Ausstehend \\
     6  & Brightpass (Bloom Extract)       & Ausstehend \\
     7  & Bloom Vertical                   & Ausstehend \\
     8  & Bloom Horizontal + Reconstitute  & Ausstehend \\
