@@ -573,8 +573,8 @@ Folgende systematische Transformationen werden bei jeder Pass-Portierung angewen
 
 \subsection{Aktueller Stand}
 \vspace{.75cm}
-Zum aktuellen Zeitpunkt ist \textbf{Pass~1 (Linearize + Bob Fields)} vollst\"andig portiert,\newline und in RetroVisor integriert. 
-\vspace{.5cm} \newline Der Pass umfasst: \vspace{.25cm}
+Zum aktuellen Zeitpunkt sind \textbf{Pass~1 (Linearize + Bob Fields)} und \textbf{Pass~2 (Vertical Scanlines)} vollst\"andig portiert und in RetroVisor integriert. Zus\"atzlich existiert eine Debug-Pipeline (per-Pass Picker) sowie ein PNG-Snapshot-Export, der die sp\"atere Pixel-Diff-Validierung gegen RetroArch vorbereitet.
+\vspace{.5cm} \newline Pass~1 umfasst: \vspace{.25cm}
 
 \begin{itemize}[leftmargin=*, nosep]
     \item \textbf{Gamma-Linearisierung:} \vspace{.25cm} \newline \texttt{pow(color.rgb, crt\_gamma)} -- Umrechnung vom nicht-linearen CRT-Farbraum \newline in lineares Licht \\
@@ -647,6 +647,74 @@ final class CrtRoyale: Shader {
 \end{lstlisting}
 
 \newpage \vspace*{-.5cm}
+\subsection{Pass~2 -- Vertikale Scanlines}
+\vspace{.5cm}
+Pass~2 modelliert die vertikale Helligkeitsverteilung des Elektronenstrahls. F\"ur jeden Ausgabepixel wird der Beitrag der zwei umgebenden Scanlines (plus eines Au\ss enseiters) gewichtet, wobei die Strahlbreite (\textit{sigma}) und die Strahlform (\textit{beta} der generalisierten Gau\ss-Verteilung) mit der Quellhelligkeit variieren -- helle Scanlines sind breiter und steiler, dunkle schmaler und weicher. Das Ergebnis ist der charakteristische CRT-Scanline-Look.
+
+\vspace{.5cm}
+\textbf{Mathematischer Kern.} Der Lichtbeitrag einer Scanline an Distanz $d$ (in Scanlines) folgt einer generalisierten Gau\ss-Verteilung mit Parametern $\alpha = \sqrt{2}\,\sigma$ und $\beta$:
+\[
+G(d;\,\alpha,\,\beta) \;=\; \frac{\beta}{2\,\alpha\,\Gamma(1/\beta)}\,\exp\!\left(-\left|\frac{d}{\alpha}\right|^{\beta}\right)
+\]
+F\"ur $\beta = 2$ degeneriert dies zur klassischen Gau\ss-Verteilung. Da die Output-Pixelh\"ohe in Scanlines $\geq 1$ sein kann, wird \"uber drei Punkte gemittelt (Anti-Aliasing).
+
+\vspace{.5cm}
+\textbf{Statische Pfad-Reduktion.} Die Slang-Referenz unterst\"utzt vier orthogonale Schalter (\texttt{beam\_num\_scanlines}, \texttt{beam\_generalized\_gaussian}, \texttt{beam\_antialias\_level}, \texttt{beam\_misconvergence}) und damit $\sim$16 Code-Pfade. F\"ur den Erstwurf wurde der \textit{Default}-Pfad portiert: 3~Scanlines, generalisierte Gau\ss-Verteilung, Sample-AA mit 3~Punkten, keine RGB-Konvergenz. Damit halbiert sich der Kernel-Code; die fehlenden Pfade sind als TODO im MSL-Quellcode dokumentiert und Kann-Kriterien.
+
+\vspace{.5cm}
+\textbf{Linear-Light-Pipeline.} Eine zentrale Implementierungsentscheidung: Pass~1 linearisiert einmal, alle Zwischen-Texturen bleiben in linearem Licht. Damit kollabiert die in der Slang-Referenz enthaltene \texttt{tex2D\_linearize}-Funktion in unserem Port zu einem normalen Texture-Sample. Erst der finale Encode-Pass re-encodiert f\"ur die Anzeige. Eine doppelte Gamma-Anwendung w\"are sonst leicht m\"oglich. Da Strahlbeitr\"age vor dem Auto-Dim ($\texttt{levels\_autodim\_temp} = 0.5$) durchaus $> 1.0$ erreichen, werden alle Zwischen-Texturen als \texttt{rgba16Float} allokiert -- $\texttt{bgra8Unorm}$ w\"urde stillschweigend clippen.
+
+\vspace{.5cm}
+\begin{lstlisting}[language=Metal, caption={Pass~2 -- Beam-Beitragsfunktion (3-Sample-Mittelung)}]
+inline float3 scanline_generalized_gaussian_sampled_contrib(
+    float3 dist, float3 color, float pixel_height,
+    float sigma_range, float shape_range, ...)
+{
+    float3 sigma  = get_gaussian_sigma(color, sigma_range, ...);
+    float3 alpha  = sqrt(2.0f) * sigma;
+    float3 beta   = get_generalized_gaussian_beta(color, shape_range, ...);
+    float3 alpha_inv = 1.0f / alpha;
+    float3 beta_inv  = 1.0f / beta;
+
+    float3 scale = color * beta * 0.5f * alpha_inv /
+                   gamma_impl(beta_inv, beta);
+
+    float3 sample_offset = float3(pixel_height / 3.0f);
+    float3 dist2 = dist + sample_offset;
+    float3 dist3 = abs(dist - sample_offset);
+
+    float3 w1 = exp(-pow(abs(dist  * alpha_inv), beta));
+    float3 w2 = exp(-pow(abs(dist2 * alpha_inv), beta));
+    float3 w3 = exp(-pow(abs(dist3 * alpha_inv), beta));
+
+    return scale / 3.0f * (w1 + w2 + w3);
+}
+\end{lstlisting}
+
+\vspace{.5cm}
+\subsection{Debug-Pipeline}
+\vspace{.5cm}
+Die schrittweise Validierung der 13-Pass-Pipeline ben\"otigt eine M\"oglichkeit, Zwischen-Ergebnisse einzelner Passes auf den Bildschirm zu bringen. Daf\"ur wurde ein \texttt{debug\_pass\_index}-Uniform eingef\"uhrt sowie ein UI-Picker \texttt{Debug -> Show Pass} mit den Optionen \texttt{Final}, \texttt{Pass 1 (Linearize)}, \texttt{Pass 2 (Scanlines V)}.
+
+\vspace{.25cm}
+\textbf{Routing.} Alle aktivierten Passes werden weiterhin sequentiell ausgef\"uhrt -- die Auswahl beeinflusst nur, welche Zwischen-Textur am Schluss durch \texttt{pass\_final\_encode} in das Output-Bild geschrieben wird. Damit bleibt das Bild unabh\"angig vom gew\"ahlten Pass gamma-korrekt darstellbar, und es entstehen keine getrennten Code-Pfade f\"ur jede Auswahl.
+
+\vspace{.25cm}
+\textbf{Wachstum.} Mit jedem zus\"atzlich portierten Pass (3..12) wird der Picker um einen Eintrag erweitert. Die Routing-Logik in \texttt{apply()} bleibt eine flache \texttt{switch}-Anweisung; daf\"ur wird die zur Anzeige gew\"ahlte Zwischentextur jeweils der finalen Encode-Stufe \"ubergeben.
+
+\vspace{.5cm}
+\subsection{Snapshot-Export}
+\vspace{.5cm}
+Der UI-Eintrag \texttt{Debug -> Save Snapshot} l\"ost einen Edge-getriggerten PNG-Export aus. Im n\"achsten \texttt{apply()}-Aufruf wird die aktuell angezeigte Output-Textur \"uber einen \texttt{MTLBlitCommandEncoder} in einen \texttt{shared}-Storage kopiert (falls n\"otig) und nach Abschluss des Command-Buffers als 8-Bit-PNG nach
+\begin{center}
+    \texttt{\textasciitilde/Pictures/RetroVisor/CRT-Royale/pass<N>-<yyyyMMdd-HHmmss>.png}
+\end{center}
+geschrieben. \texttt{<N>} entspricht dem aktiven \texttt{debug\_pass\_index}.
+
+\vspace{.25cm}
+\textbf{Validierungs-Workflow.} Die exportierten PNGs sind die Eingabe f\"ur das geplante Vergleichsskript \texttt{crt-royale-msl/tools/compare.py}, das pro Pass eine $\Delta E_{2000}$-Heatmap, SSIM und Kanal-Histogramme gegen RetroArch-Referenz-Snapshots berechnet (Implementation in der n\"achsten Iteration).
+
+\newpage \vspace*{-.5cm}
 \subsection{Dateien im Projekt}
 \vspace{.25cm}
 \begin{table}[H]
@@ -657,10 +725,12 @@ final class CrtRoyale: Shader {
     \toprule
     \tableheadercolor \thw{Datei} & \thw{Beschreibung} \\
     \midrule
-    \texttt{RetroVisor/GPU/CrtRoyale.metal} & Metal Compute Kernels (GPU-seitig) \\
-    \texttt{RetroVisor/Shaders/CrtRoyale.swift} & Swift-Integrationsklasse (CPU-seitig) \\
+    \texttt{RetroVisor/GPU/CrtRoyale.metal} & Metal Compute Kernels (Pass 1 + Pass 2 + Final) \\
+    \texttt{RetroVisor/Shaders/CrtRoyale.swift} & Swift-Integrationsklasse + Snapshot-Export \\
     \texttt{RetroVisor/Shaders/ShaderLibrary.swift} & Registrierung als 3. Shader \\
-    \texttt{crt-royale-msl/src/CrtRoyalePass1Linearize.metal} & Standalone-Port in eigenem Repo \\
+    \texttt{crt-royale-msl/src/CrtRoyalePass1Linearize.metal} & Standalone-Mirror Pass 1 \\
+    \texttt{crt-royale-msl/src/CrtRoyalePass2VerticalScanlines.metal} & Standalone-Mirror Pass 2 \\
+    \texttt{crt-royale-msl/tools/compare.py} & Slot f\"ur Pixel-Diff-Skript (geplant) \\
     \bottomrule
 \end{tabularx}
 \rowcolors{0}{}{} \vspace{.25cm}
@@ -674,13 +744,14 @@ final class CrtRoyale: Shader {
 
 \subsection{Methodik}
 \vspace{.5cm}
-Die Validierung erfolgt durch \textbf{visuellen A/B-Vergleich} zwischen dem GLSL-Original \newline (in RetroArch) und der MSL-Portierung (in RetroVisor):
+Die Validierung erfolgt durch \textbf{visuellen A/B-Vergleich} zwischen dem GLSL-Original \newline (in RetroArch) und der MSL-Portierung (in RetroVisor) -- und zwar \textbf{pro Pass}, nicht nur am Pipeline-Ende:
 \vspace{.25cm}
 \begin{enumerate}[nosep]
     \item Identisches Eingabebild verwenden (240p Test Suite, definierte Testmuster) \\
     \item Identische Parameter-Einstellungen (crt\_gamma, lcd\_gamma, mask\_type, etc.) \\
-    \item Screenshots beider Ausgaben erstellen \\
-    \item Pixel-f\"ur-Pixel-Differenzbild berechnen \\
+    \item Per-Pass-Snapshot in RetroVisor \"uber den Debug-Picker + Save Snapshot \\
+    \item Korrespondierender Snapshot der gleichen Stufe aus RetroArch \\
+    \item Pixel-f\"ur-Pixel-Differenzbild via \texttt{tools/compare.py} berechnen \\
     \item Akzeptanzkriterium: $\Delta E < 2.0$ (kaum sichtbarer Unterschied)
 \end{enumerate}
 
@@ -765,7 +836,7 @@ Die \textbf{240p Test Suite} (NES-ROM) bietet standardisierte Testbilder:
     \tableheadercolor \thw{Pass} & \thw{Beschreibung} & \thw{Status} \\
     \midrule
     1  & Linearize + Bob Fields          & \checkmark ~Abgeschlossen \\
-    2  & Vertical Scanlines (Beam)       & Ausstehend \\
+    2  & Vertical Scanlines (Beam)       & \checkmark ~Abgeschlossen \\
     3  & Mask Resize Horizontal           & Ausstehend \\
     4  & Mask Resize Vertical             & Ausstehend \\
     5  & Scanlines + Mask Apply           & Ausstehend \\
