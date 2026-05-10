@@ -21,6 +21,10 @@ Package.resolved
 
 # Validation pipeline runtime artifacts (regenerable):
 #   - inputs/*.png are produced by tests/inputs/generate.py
-#   - outputs/  is produced by tests/validate.sh
+#   - outputs/   is produced by tests/validate.sh
+#   - reference/ is produced by tests/capture_reference.sh (librashader-cli)
+#   - diff/      is produced by tests/compare_all.sh
 tests/inputs/*.png
 tests/outputs/
+tests/reference/
+tests/diff/

@@ -77,3 +77,15 @@ if (( neutral_status != 0 || default_status != 0 )); then
 fi
 echo
 echo "OK: all checks passed."
+
+# Optional reference-comparison stage: only runs if librashader-cli is
+# available AND a reference snapshot tree already exists. Reference snapshots
+# are produced separately via tests/capture_reference.sh; we don't regenerate
+# them on every validate.sh run (slow + Metal device-bound).
+LIBRASHADER="${LIBRASHADER_CLI:-$HOME/.cargo/bin/librashader-cli}"
+REF_DIR="$HERE/reference"
+if [[ -x "$LIBRASHADER" && -d "$REF_DIR" ]]; then
+    echo
+    echo "==> [6/6] Comparing default outputs against librashader reference"
+    "$HERE/compare_all.sh" default || true
+fi

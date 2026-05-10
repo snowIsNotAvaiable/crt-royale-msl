@@ -38,6 +38,9 @@ struct Uniforms {
     var beam_max_shape: Float
     var beam_shape_power: Float
     var levels_autodim_temp: Float
+    var mask_type: UInt32
+    var mask_triad_size: Float
+    var mask_amplify: Float
     var debug_pass_index: UInt32
 
     static let defaults = Uniforms(
@@ -48,6 +51,7 @@ struct Uniforms {
         beam_min_sigma: 0.02, beam_max_sigma: 0.30, beam_spot_power: 0.33,
         beam_min_shape: 2.0, beam_max_shape: 4.0, beam_shape_power: 0.25,
         levels_autodim_temp: 0.5,
+        mask_type: 0, mask_triad_size: 3.0, mask_amplify: 3.0,
         debug_pass_index: 0
     )
 }
@@ -250,6 +254,7 @@ let device = makeDevice()
 let library = compileLibrary(device: device, metalPath: args.metalPath)
 let pass1     = makeKernel(library: library, device: device, name: "crt_royale::pass1_linearize")
 let pass2     = makeKernel(library: library, device: device, name: "crt_royale::pass2_vertical_scanlines")
+let pass3     = makeKernel(library: library, device: device, name: "crt_royale::pass3_apply_mask")
 let finalEnc  = makeKernel(library: library, device: device, name: "crt_royale::pass_final_encode")
 let sampler   = makeSampler(device: device)
 let queue     = device.makeCommandQueue()!
@@ -265,10 +270,13 @@ print("[runner] Uniforms.stride = \(MemoryLayout<Uniforms>.stride)")
 // Pass 1 keeps source resolution (matches scale_type=source in the slang
 // preset). Pass 2 writes into the Y-upscaled output FBO -- this is what
 // produces visible scanlines (pixel_height = video.y / output.y < 1).
+// Pass 3 stays at the same upscaled resolution as Pass 2.
 let linearized        = makeTexture(device: device, width: w, height: h,    pixelFormat: .rgba16Float)
 let scanlinesVertical = makeTexture(device: device, width: w, height: outH, pixelFormat: .rgba16Float)
+let maskedScanlines   = makeTexture(device: device, width: w, height: outH, pixelFormat: .rgba16Float)
 let displayPass1      = makeTexture(device: device, width: w, height: h,    pixelFormat: .bgra8Unorm)
 let displayPass2      = makeTexture(device: device, width: w, height: outH, pixelFormat: .bgra8Unorm)
+let displayPass3      = makeTexture(device: device, width: w, height: outH, pixelFormat: .bgra8Unorm)
 
 var uniforms = Uniforms.defaults
 if args.neutralGamma {
@@ -289,11 +297,17 @@ runKernel(commandBuffer: cmd, pipeline: pass1, sampler: sampler,
 runKernel(commandBuffer: cmd, pipeline: pass2, sampler: sampler,
           source: linearized, target: scanlinesVertical, uniforms: &uniforms)
 
+// Pass 3 -> maskedScanlines (procedural aperture grille)
+runKernel(commandBuffer: cmd, pipeline: pass3, sampler: sampler,
+          source: scanlinesVertical, target: maskedScanlines, uniforms: &uniforms)
+
 // Final encode of each linear-light stage so we can view it
 runKernel(commandBuffer: cmd, pipeline: finalEnc, sampler: sampler,
           source: linearized, target: displayPass1, uniforms: &uniforms)
 runKernel(commandBuffer: cmd, pipeline: finalEnc, sampler: sampler,
           source: scanlinesVertical, target: displayPass2, uniforms: &uniforms)
+runKernel(commandBuffer: cmd, pipeline: finalEnc, sampler: sampler,
+          source: maskedScanlines, target: displayPass3, uniforms: &uniforms)
 
 cmd.commit()
 cmd.waitUntilCompleted()
@@ -306,15 +320,18 @@ if let err = cmd.error {
 let inputCopy = "\(args.outDir)/00-input.png"
 let p1Out     = "\(args.outDir)/01-pass1.png"
 let p2Out     = "\(args.outDir)/02-pass2.png"
-let finalOut  = "\(args.outDir)/03-final.png"
+let p3Out     = "\(args.outDir)/03-pass3.png"
+let finalOut  = "\(args.outDir)/04-final.png"
 
 writeTextureAsPNG(input,         path: inputCopy)
 writeTextureAsPNG(displayPass1,  path: p1Out)
 writeTextureAsPNG(displayPass2,  path: p2Out)
-writeTextureAsPNG(displayPass2,  path: finalOut) // final == pass2 in current pipeline
+writeTextureAsPNG(displayPass3,  path: p3Out)
+writeTextureAsPNG(displayPass3,  path: finalOut) // final == pass3 in current pipeline
 
 print("[runner] wrote: \(inputCopy)")
 print("[runner] wrote: \(p1Out)")
 print("[runner] wrote: \(p2Out)")
+print("[runner] wrote: \(p3Out)")
 print("[runner] wrote: \(finalOut)")
 print("[runner] OK")
