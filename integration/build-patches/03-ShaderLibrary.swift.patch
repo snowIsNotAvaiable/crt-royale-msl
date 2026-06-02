@@ -1,0 +1,10 @@
+--- /tmp/_head_ShaderLibrary.swift	2026-06-02 16:46:04
++++ RetroVisor/Shaders/ShaderLibrary.swift	2026-05-10 15:53:27
+@@ -108,6 +108,7 @@
+         shaders.append(Sankara())
+         shaders.append(CRTEasy())
+         shaders.append(VHS())
++        shaders.append(CrtRoyale())
+         shaders.append(ColorFilter())
+         shaders.append(ColorSplitter())
+         
