@@ -28,7 +28,7 @@ fi
 
 mkdir -p "$DIFF_DIR"
 
-PASSES=(01-pass1 02-pass2 03-pass3 04-final)
+PASSES=(01-pass1 02-pass2 02b-bloom_approx 02c-halation_v 02d-halation_blur 02e-mask_resize_v 02f-mask_resize 03-pass3 03b-brightpass 03c-bloom_v 03d-bloom_final 04-final)
 
 printf "%-14s %-10s %8s %8s %8s %8s\n" "pattern" "pass" "deltaE" "p95" "max" "ssim"
 printf '%.0s-' {1..62}; echo

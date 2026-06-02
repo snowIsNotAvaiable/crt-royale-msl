@@ -20,57 +20,93 @@
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
 \babel@aux{ngerman}{}
-\@writefile{toc}{\contentsline {section}{\numberline {1}Einleitung}{2}{section.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Motivation}{2}{subsection.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Projektziel}{2}{subsection.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Abgrenzung}{2}{subsection.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {2}Grundlagen}{3}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}GPU-Programmierung und Compute Shader}{3}{subsection.2.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Compute-Shader-Dispatch: \newline  Das Bild wird in Threadgroups unterteilt, jeder Thread bearbeitet ein Pixel\relax }}{3}{figure.caption.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Metal Shading Language (MSL)}{3}{subsection.2.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Zentrale MSL-Konzepte\relax }}{3}{table.caption.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}GLSL vs.\ MSL -- Wesentliche Unterschiede}{4}{subsection.2.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces GLSL-zu-MSL-\"Ubersetzungstabelle\relax }}{4}{table.caption.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Ist-Analyse: CRT-Royale}{4}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}\"Uberblick}{4}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Die 13-Pass-Pipeline}{5}{subsection.3.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces CRT-Royale 13-Pass-Pipeline}}{5}{figure.caption.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Quellstruktur}{5}{subsection.3.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Wichtige Header-Dateien des CRT-Royale-Originals\relax }}{5}{table.caption.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Konfigurierbare Parameter (Auszug)}{6}{subsection.3.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Wichtige CRT-Royale-Parameter\relax }}{6}{table.caption.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Zielarchitektur: RetroVisor}{6}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}\"Uberblick}{6}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Shader-Integrationsmuster}{7}{subsection.4.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces RetroVisor Shader-Integrationsmuster\relax }}{7}{figure.caption.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Render-Pipeline}{7}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Technologieauswahl}{8}{section.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Technologie\"ubersicht\relax }}{8}{table.caption.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Portierungsstrategie}{8}{section.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Vorgehen}{8}{subsection.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}\"Ubersetzungsregeln}{8}{subsection.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Herausforderungen}{9}{subsection.6.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Implementierung}{9}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Aktueller Stand}{9}{subsection.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Pass~1: Code-Beispiel (MSL)}{10}{subsection.7.2}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}{\ignorespaces Pass~1 -- Linearize-Kernel (vereinfacht)}}{10}{lstlisting.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Swift-Integration}{10}{subsection.7.3}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}{\ignorespaces CrtRoyale.swift -- Multi-Pass-Orchestrierung (vereinfacht)}}{10}{lstlisting.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Dateien im Projekt}{11}{subsection.7.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Projektdateien\relax }}{11}{table.caption.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}Validierungskonzept}{11}{section.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Methodik}{11}{subsection.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Testmuster}{11}{subsection.8.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Testmuster und validierte Aspekte\relax }}{11}{table.caption.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9}Evaluierungsplan}{12}{section.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Qualit\"atsvergleich}{12}{subsection.9.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Performancebewertung}{12}{subsection.9.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10}Projektplanung}{12}{section.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Phasen\"ubersicht}{12}{subsection.10.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Phasen\"ubersicht\relax }}{12}{table.caption.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {10.2}Detailplan Phase~1: Portierung}{12}{subsection.10.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Pass-Portierungsstatus\relax }}{12}{table.caption.12}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {11}Muss- und Kann-Kriterien}{13}{section.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {12}Glossar}{14}{section.12}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Glossar\relax }}{14}{table.caption.13}\protected@file@percent }
-\gdef \@abspage@last{15}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Einleitung}{3}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Motivation}{3}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Projektziel}{3}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Abgrenzung}{3}{subsection.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Grundlagen}{4}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}GPU-Programmierung und Compute Shader}{4}{subsection.2.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Compute-Shader-Dispatch: \newline  Das Bild wird in Threadgroups unterteilt, jeder Thread bearbeitet ein Pixel\relax }}{4}{figure.caption.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Metal Shading Language (MSL)}{4}{subsection.2.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Zentrale MSL-Konzepte\relax }}{4}{table.caption.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}GLSL vs.\ MSL -- Wesentliche Unterschiede}{5}{subsection.2.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces GLSL-zu-MSL-\"Ubersetzungstabelle\relax }}{5}{table.caption.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Ist-Analyse: CRT-Royale}{5}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}\"Uberblick}{5}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Die 12-Pass-Pipeline}{6}{subsection.3.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces CRT-Royale 12-Pass-Pipeline}}{6}{figure.caption.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Quellstruktur}{6}{subsection.3.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Wichtige Header-Dateien des CRT-Royale-Originals\relax }}{6}{table.caption.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Konfigurierbare Parameter (Auszug)}{7}{subsection.3.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Wichtige CRT-Royale-Parameter\relax }}{7}{table.caption.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Zielarchitektur: RetroVisor}{7}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}\"Uberblick}{7}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Shader-Integrationsmuster}{8}{subsection.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces RetroVisor Shader-Integrationsmuster\relax }}{8}{figure.caption.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Render-Pipeline}{8}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Technologieauswahl}{9}{section.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Technologie\"ubersicht\relax }}{9}{table.caption.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Portierungsstrategie}{9}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Vorgehen}{9}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}\"Ubersetzungsregeln}{9}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Herausforderungen}{11}{subsection.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Implementierung}{11}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Aktueller Stand}{11}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Pass~1: Code-Beispiel (MSL)}{12}{subsection.7.2}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}{\ignorespaces Pass~1 -- Linearize-Kernel (vereinfacht)}}{12}{lstlisting.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Swift-Integration}{12}{subsection.7.3}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}{\ignorespaces CrtRoyale.swift -- Multi-Pass-Orchestrierung (vereinfacht)}}{12}{lstlisting.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Pass~2 -- Vertikale Scanlines}{13}{subsection.7.4}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {3}{\ignorespaces Pass~2 -- Beam-Beitragsfunktion (3-Sample-Mittelung)}}{13}{lstlisting.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Pass~3 -- Phosphor-Maske}{14}{subsection.7.5}\protected@file@percent }
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {4}{\ignorespaces Pass~3 -- Apply-Mask-Kernel (LUT-Pfad, Slang-\"aquivalent)}}{15}{lstlisting.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.6}BLOOM\_APPROX (Slang Pass 2)}{16}{subsection.7.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.7}BRIGHTPASS (Slang Pass 8)}{16}{subsection.7.7}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces BRIGHTPASS -- $\Delta E_{2000}$ vs. Slang-Original. Solids exakt, smooth Inputs deutlich unter Threshold.\relax }}{17}{table.caption.9}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:dE-brightpass}{{6}{17}{BRIGHTPASS -- $\Delta E_{2000}$ vs. Slang-Original. Solids exakt, smooth Inputs deutlich unter Threshold.\relax }{table.caption.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.8}Multi-Mask-Type-Support}{17}{subsection.7.8}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Multi-Mask-Type-Validierung: $\Delta E_{2000}$ auf \texttt  {colorbars} 04-final f\"ur alle drei portierten Maskentypen. Alle unter dem Akzeptanzkriterium von $2.0$.\relax }}{18}{table.caption.10}\protected@file@percent }
+\newlabel{tab:dE-multi-mask}{{7}{18}{Multi-Mask-Type-Validierung: $\Delta E_{2000}$ auf \texttt {colorbars} 04-final f\"ur alle drei portierten Maskentypen. Alle unter dem Akzeptanzkriterium von $2.0$.\relax }{table.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.9}Bloom-Kette -- BLOOM\_V + BLOOM\_FINAL (Slang Pass 9+10)}{18}{subsection.7.9}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces 04-final.png $\Delta E_{2000}$ vs. Slang-Original. "Vorher" = Pass 4 sampelt MASKED\_SCANLINES (vor Bloom V/H); "Nachher" = Pass 4 sampelt BLOOM\_FINAL.\relax }}{20}{table.caption.11}\protected@file@percent }
+\newlabel{tab:dE-final-after-bloom}{{8}{20}{04-final.png $\Delta E_{2000}$ vs. Slang-Original. "Vorher" = Pass 4 sampelt MASKED\_SCANLINES (vor Bloom V/H); "Nachher" = Pass 4 sampelt BLOOM\_FINAL.\relax }{table.caption.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.10}Pass~4 -- Geometry, Border, Final Encode (voller Port)}{20}{subsection.7.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.11}Debug-Pipeline}{22}{subsection.7.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.12}Snapshot-Export}{22}{subsection.7.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.13}Headless Validierungs-Pipeline}{22}{subsection.7.13}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Per-Pass-Snapshots f\"ur \texttt  {colorbars}}}{24}{figure.caption.12}\protected@file@percent }
+\newlabel{fig:per-pass-montage}{{4}{24}{Per-Pass-Snapshots f\"ur \texttt {colorbars}}{figure.caption.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.14}Vergleichswerkzeug \texttt  {compare.py}}{24}{subsection.7.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.15}Reference-Pipeline via \texttt  {librashader-cli}}{25}{subsection.7.15}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Pass 2 (Vertical Scanlines) -- $\Delta E_{2000}$-Werte gegen das Slang-Original. Akzeptanzkriterium $\overline  {\Delta E} < 2.0$ deutlich erf\"ullt.\relax }}{26}{table.caption.13}\protected@file@percent }
+\newlabel{tab:dE-pass2}{{9}{26}{Pass 2 (Vertical Scanlines) -- $\Delta E_{2000}$-Werte gegen das Slang-Original. Akzeptanzkriterium $\overline {\Delta E} < 2.0$ deutlich erf\"ullt.\relax }{table.caption.13}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Pass 3 (Apply Mask, LUT-Pfad) -- $\Delta E_{2000}$-Werte gegen das Slang-Original mit \texttt  {mask\_sample\_mode\_desired=1}. Ohne LUT (prozedurale Aperture-Grille) liegen die Werte um den Faktor 10--20 h\"oher.\relax }}{27}{table.caption.14}\protected@file@percent }
+\newlabel{tab:dE-pass3}{{10}{27}{Pass 3 (Apply Mask, LUT-Pfad) -- $\Delta E_{2000}$-Werte gegen das Slang-Original mit \texttt {mask\_sample\_mode\_desired=1}. Ohne LUT (prozedurale Aperture-Grille) liegen die Werte um den Faktor 10--20 h\"oher.\relax }{table.caption.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.16}Dateien im Projekt}{28}{subsection.7.16}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Projektdateien\relax }}{28}{table.caption.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Validierungskonzept}{28}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Methodik}{28}{subsection.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Testmuster}{29}{subsection.8.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Testmuster und validierte Aspekte\relax }}{29}{table.caption.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Evaluierung (Phase~4)}{30}{section.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Performance-Messung}{30}{subsection.9.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces Frame-Time-Statistik f\"ur $N = 100$ Iterationen. Alle Konfigurationen bleiben weit unter dem 60-FPS-Budget (16.67\,ms).\relax }}{30}{table.caption.17}\protected@file@percent }
+\newlabel{tab:bench}{{13}{30}{Frame-Time-Statistik f\"ur $N = 100$ Iterationen. Alle Konfigurationen bleiben weit unter dem 60-FPS-Budget (16.67\,ms).\relax }{table.caption.17}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Speicherverbrauch (VRAM)}{30}{subsection.9.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {14}{\ignorespaces VRAM-Footprint bei Viewport-Aufl\"osung $256 \times 768$. Bei $8\times $-Y-Upscale ($256 \times 1536$) steigt die Summe auf $\sim 23\,$MB.\relax }}{30}{table.caption.18}\protected@file@percent }
+\newlabel{tab:vram}{{14}{30}{VRAM-Footprint bei Viewport-Aufl\"osung $256 \times 768$. Bei $8\times $-Y-Upscale ($256 \times 1536$) steigt die Summe auf $\sim 23\,$MB.\relax }{table.caption.18}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}Qualit\"atsvergleich vs. Slang-Original}{31}{subsection.9.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {15}{\ignorespaces Default-Pipeline $\Delta E$2000 + SSIM vs. Slang-Reference. Akzeptanzkriterium $\overline  {\Delta E} < 2.0$ wird auf \texttt  {colorbars} und \texttt  {solid\_black} voll erreicht; \texttt  {horiz\_lines} ($5.04$) ist der h\"ochste verbliebene Wert, getragen von der nicht voll bit-exakten Mask-Resize-Kalibrierung.\relax }}{31}{table.caption.19}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.4}Qualitativer Vergleich vs. Sankara / CRT-Easy}{31}{subsection.9.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {16}{\ignorespaces Vergleich der Shader-Architektur. CRT-Royale ist die mit Abstand reichhaltigste Implementierung; CRT-Easy ist optimiert auf minimalen Code, Sankara liegt dazwischen.\relax }}{31}{table.caption.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.5}Bekannte Limitationen}{32}{subsection.9.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}Projektplanung}{32}{section.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Phasen\"ubersicht}{32}{subsection.10.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {17}{\ignorespaces Phasen\"ubersicht\relax }}{32}{table.caption.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.2}Detailplan Phase~1: Portierung}{32}{subsection.10.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {18}{\ignorespaces Pass-Portierungsstatus\relax }}{32}{table.caption.22}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {11}Muss- und Kann-Kriterien}{33}{section.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {12}Glossar}{34}{section.12}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {19}{\ignorespaces Glossar\relax }}{34}{table.caption.23}\protected@file@percent }
+\gdef \@abspage@last{35}

@@ -125,10 +125,18 @@ def analyze_pattern(name: str, dir: Path, rep: Report, mode: str) -> None:
 
     # Pass 1 round-trip vs input.
     if mode == "neutral":
-        diff = np.abs(pass1.astype(np.int32) - inp.astype(np.int32))
+        # In neutral mode the runner sets crt_gamma = lcd_gamma = 2.2.
+        # Pass 1 outputs raw linear (since the SwiftRunner now writes pass-N
+        # snapshots without gamma encoding to match librashader's per-pass
+        # export format). The round-trip therefore lives in linear space:
+        # pass1_byte ≈ pow(input_byte / 255, 2.2) * 255
+        gamma = 2.2
+        expected = (np.power(inp.astype(np.float64) / 255.0, gamma) * 255.0
+                    + 0.5).astype(np.int32)
+        diff = np.abs(pass1.astype(np.int32) - expected)
         mean_err = float(diff.mean())
         max_err = int(diff.max())
-        rep.check("pass1 ≈ input (round-trip identity)",
+        rep.check("pass1 = linearize(input) (gamma=2.2)",
                   mean_err < 2.0 and max_err < 8,
                   f"mean={mean_err:.2f} max={max_err}")
     else:
