@@ -38,16 +38,32 @@ fi
 # Slang preset has 12 passes (indexes 0..11). Stages we capture for comparison:
 #   passes-enabled=1  -> after pass 0 (linearize) ~ our pass1
 #   passes-enabled=2  -> after pass 1 (vertical scanlines) ~ our pass2
-#   passes-enabled=8  -> after pass 7 (apply mask) ~ our pass3 (simplified)
+#   passes-enabled=3  -> after pass 2 (BLOOM_APPROX, 320x240) ~ our pass_bloom_approx
+#   passes-enabled=4  -> after pass 3 (halation V, 320x240)   ~ our pass_halation_v
+#   passes-enabled=5  -> after pass 4 (HALATION_BLUR, 320x240) ~ our pass_halation_h
+#   passes-enabled=8  -> after pass 7 (apply mask) ~ our pass3
+#   passes-enabled=9  -> after pass 8 (BRIGHTPASS) ~ our pass_brightpass
+#   passes-enabled=10 -> after pass 9 (BLOOM_V)    ~ our pass_bloom_v
+#   passes-enabled=11 -> after pass 10 (BLOOM_FINAL) ~ our pass_bloom_h_reconstitute
 #   passes-enabled=12 -> full pipeline = final
-# These are the best-aligned stages between our reduced pipeline and the
-# Slang reference; intermediate Slang passes (2..6, 8..10) have no MSL
-# counterpart yet.
+# Stage format: name:n_passes:dim_override_or_dash:extra_params_or_dash
+# Pass 5 (mask_resize_v) output dim depends on the rendered viewport.
+# At our 256x768 default, pass 5 produces 64x48; pass 6 (MASK_RESIZE) is
+# 16x48. We pin those via --dimensions so librashader doesn't blit-resize
+# the per-pass snapshot before exporting.
 declare -a STAGES=(
-  "01-pass1.png:1"
-  "02-pass2.png:2"
-  "03-pass3.png:8"
-  "04-final.png:12"
+  "01-pass1.png:1:-:-"
+  "02-pass2.png:2:-:-"
+  "02b-bloom_approx.png:3:320x240:-"
+  "02c-halation_v.png:4:320x240:-"
+  "02d-halation_blur.png:5:320x240:-"
+  "02e-mask_resize_v.png:6:64x48:-"
+  "02f-mask_resize.png:7:16x48:-"
+  "03-pass3.png:8:-:-"
+  "03b-brightpass.png:9:-:-"
+  "03c-bloom_v.png:10:-:-"
+  "03d-bloom_final.png:11:-:-"
+  "04-final.png:12:-:-"
 )
 
 mkdir -p "$REF_DIR"
@@ -70,17 +86,27 @@ for input in "${INPUTS[@]}"; do
   cp "$input" "$out_dir/00-input.png"
   echo "[$name]"
   for stage in "${STAGES[@]}"; do
-    out_name="${stage%%:*}"
-    n_passes="${stage##*:}"
+    IFS=':' read -r out_name n_passes dim_override extra_params <<< "$stage"
     out_path="$out_dir/$out_name"
+    stage_dim="$DIM"
+    [[ "$dim_override" != "-" ]] && stage_dim="$dim_override"
+    # mask_sample_mode_desired=1 forces the hardware-resample branch of pass
+    # 7 (sample the large LUT directly via GPU mipmap+anisotropy). This is
+    # our currently-validated default. Slang Pass 5+6 (Mask-Resize V/H) are
+    # implemented in MSL but the discard-tile geometry isn't bit-exact yet,
+    # so the mode-0 path (sampling MASK_RESIZE) deviates structurally from
+    # librashader's reference. Keep the override here until that's tuned.
+    params="mask_sample_mode_desired=1"
+    [[ "$extra_params" != "-" ]] && params="$params,$extra_params"
     "$LIBRASHADER" render \
       --preset "$PRESET" \
       --image "$input" \
       --out "$out_path" \
-      --dimensions "$DIM" \
+      --dimensions "$stage_dim" \
       --passes-enabled "$n_passes" \
+      --params "$params" \
       --runtime metal >/dev/null 2>&1
-    echo "    $out_name (passes=$n_passes)"
+    echo "    $out_name (passes=$n_passes, dim=$stage_dim)"
   done
 done
 

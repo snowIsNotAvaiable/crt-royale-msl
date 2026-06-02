@@ -15,6 +15,8 @@ REPO_ROOT="$(cd "$HERE/.." && pwd)"
 WORKSPACE_ROOT="$(cd "$REPO_ROOT/.." && pwd)"
 
 METAL_SRC="${CRT_ROYALE_METAL_SRC:-$WORKSPACE_ROOT/vendor/RetroVisor/RetroVisor/GPU/CrtRoyale.metal}"
+MASK_LUT="${CRT_ROYALE_MASK_LUT:-$WORKSPACE_ROOT/vendor/slang-shaders/crt/shaders/crt-royale/TileableLinearApertureGrille15Wide8And5d5Spacing.png}"
+MASK_LUT_SMALL="${CRT_ROYALE_MASK_LUT_SMALL:-$WORKSPACE_ROOT/vendor/slang-shaders/crt/shaders/crt-royale/TileableLinearApertureGrille15Wide8And5d5SpacingResizeTo64.png}"
 INPUTS_DIR="$HERE/inputs"
 OUT_NEUTRAL="$HERE/outputs/neutral"
 OUT_DEFAULT="$HERE/outputs/default"
@@ -42,14 +44,21 @@ fi
 run_suite() {
     local mode="$1"
     local out_root="$2"
-    local extra_flags="$3"
+    local -a extra_args=()
+    if [[ -n "$3" ]]; then extra_args+=("$3"); fi
+    if [[ -f "$MASK_LUT" ]]; then
+        extra_args+=("--mask-lut" "$MASK_LUT")
+    fi
+    if [[ -f "$MASK_LUT_SMALL" ]]; then
+        extra_args+=("--mask-lut-small" "$MASK_LUT_SMALL")
+    fi
     rm -rf "$out_root"
     mkdir -p "$out_root"
     shopt -s nullglob
     for png in "$INPUTS_DIR"/*.png; do
         local name; name="$(basename "$png" .png)"
         "$RUNNER_BIN" --metal "$METAL_SRC" --input "$png" \
-            --outdir "$out_root/$name" --scale "$SCALE" $extra_flags \
+            --outdir "$out_root/$name" --scale "$SCALE" "${extra_args[@]}" \
             > /dev/null
     done
     echo "  wrote $out_root (mode=$mode, scale=${SCALE}x)"

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.10.12)  4 APR 2026 17:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.10.12)  2 JUN 2026 16:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -980,7 +980,7 @@ LaTeX Info: Redefining \nameref on input line 133.
 \c@lstlisting=\count340
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
-<HKA.jpg, id=159, 1505.625pt x 1102.1175pt>
+<HKA.jpg, id=220, 1505.625pt x 1102.1175pt>
 File: HKA.jpg Graphic file (type jpg)
 <use HKA.jpg>
 Package pdftex.def Info: HKA.jpg  used on input line 138.
@@ -1036,17 +1036,17 @@ File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 
 {/usr/local/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./HKA.j
 pg>]
-(./dokumentation.toc)
-\tf@toc=\write5
-\openout5 = `dokumentation.toc'.
-
-
+(./dokumentation.toc
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.175 \newpage
-               [1]
+l.43 ...rline {8.2}Testmuster}{29}{subsection.8.2}
+                                                  % [1])
+\tf@toc=\write5
+\openout5 = `dokumentation.toc'.
+
+ [2]
 Overfull \hbox (20.73027pt too wide) in paragraph at lines 191--194
 \T1/lmr/m/n/10.95 Ziel die-ses Se-mes-ter-pro-jekts ist die voll-stän-di-ge Por
 -tie-rung des CRT-Royale-Shaders von Slang/GLSL
@@ -1086,7 +1086,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 207--208
 
  []
 
-[2] [3]
+[3] [4]
 Underfull \hbox (badness 10000) in paragraph at lines 328--329
 
  []
@@ -1116,7 +1116,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 333--334
 
  []
 
-[4] [5] [6]
+[5] [6] [7]
 Underfull \hbox (badness 10000) in paragraph at lines 491--492
 
  []
@@ -1136,7 +1136,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 494--495
 
  []
 
-[7]
+[8]
+Underfull \hbox (badness 10000) in paragraph at lines 520--520
+[]|\T1/lmr/m/n/10 Slang-Original via Metal-Backend (Per-Pass-
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 535--536
 
  []
@@ -1181,7 +1186,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 554--555
 
  []
 
-[8]
+[9] [10]
 Underfull \hbox (badness 10000) in paragraph at lines 562--563
 
  []
@@ -1225,7 +1230,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 582--583
 
  []
 
-[9]
+[11]
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
 nput line 590.
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
@@ -1241,134 +1246,455 @@ File: lstlang3.sty 2020/03/24 1.8d listings language file
 )
 (/usr/local/texlive/2022/texmf-dist/tex/latex/listings/lstmisc.sty
 File: lstmisc.sty 2020/03/24 1.8d (Carsten Heinz)
-) [10]
-Underfull \hbox (badness 10000) in paragraph at lines 680--681
+) [12]
+Overfull \hbox (68.85136pt too wide) in paragraph at lines 662--663
+[]\T1/lmr/bx/n/10.95 Statische Pfad-Reduktion. \T1/lmr/m/n/10.95 Die Slang-Refe
+renz un-ter-stützt vier or-tho-go-na-le Schal-ter (\T1/lmtt/m/n/10.95 beam_num_
+scanlines\T1/lmr/m/n/10.95 ,
+ []
+
+
+Overfull \hbox (0.88507pt too wide) in paragraph at lines 662--663
+\T1/lmtt/m/n/10.95 beam_generalized_gaussian\T1/lmr/m/n/10.95 , \T1/lmtt/m/n/10
+.95 beam_antialias_level\T1/lmr/m/n/10.95 , \T1/lmtt/m/n/10.95 beam_misconverge
+nce\T1/lmr/m/n/10.95 ) und da-mit $\OMS/lmsy/m/n/10.95 ^^X$\T1/lmr/m/n/10.95 16
+
+ []
+
+[13]
+Overfull \hbox (24.34329pt too wide) in paragraph at lines 697--698
+\T1/lmr/m/n/10.95 Bildschirms. Der Ker-nel im-ple-men-tiert zwei Co-de-pfa-de, 
+ge-steu-ert über \T1/lmtt/m/n/10.95 uniforms.mask_lut_enabled\T1/lmr/m/n/10.95 
+:
+ []
+
+
+Overfull \hbox (42.8354pt too wide) in paragraph at lines 700--701
+\T1/lmr/m/n/10.95 Pass 7 (\T1/lmtt/m/n/10.95 crt-royale-scanlines-horizontal-ap
+ply-mask.slang\T1/lmr/m/n/10.95 ). Die Slang-Passes 2--6 (\T1/lmtt/m/n/10.95 BL
+OOM_APPROX\T1/lmr/m/n/10.95 ,
+ []
+
+
+Overfull \hbox (43.04161pt too wide) in paragraph at lines 700--701
+\T1/lmr/m/n/10.95 die Slang-Referenz ver-gleich-bar bleibt, set-zen wir beim Re
+ference-Capture \T1/lmtt/m/n/10.95 mask_sample_mode_desired=1
+ []
+
+
+Overfull \hbox (26.77643pt too wide) in paragraph at lines 700--701
+\T1/lmr/m/n/10.95 MASK_RESIZE-Variante). Die \T1/lmtt/m/n/10.95 Default\T1/lmr/
+m/n/10.95 -Parameter \T1/lmtt/m/n/10.95 halation_weight\T1/lmr/m/n/10.95 =0 und
+ \T1/lmtt/m/n/10.95 PHOSPHOR_BLOOM_FAKE
+ []
+
+
+Overfull \hbox (185.69339pt too wide) in paragraph at lines 703--704
+[]\T1/lmr/bx/n/10.95 LUT-Pfad. \T1/lmr/m/n/10.95 Die Aperture-Grille wird als 5
+12$\OMS/lmsy/m/n/10.95 ^^B$\T1/lmr/m/n/10.95 512 mip-map-ped Tex-ture (\T1/lmtt
+/m/n/10.95 TileableLinearApertureGrille15Wide8And5d5Spacing.png
+ []
+
+
+Overfull \hbox (45.85913pt too wide) in paragraph at lines 706--708
+\T1/lmr/m/n/10.95 Fil-ter, \T1/lmtt/m/n/10.95 repeat\T1/lmr/m/n/10.95 -Wrap-Mod
+e und Mipmap-Filtering ge-sam-pelt -- ana-log zu \T1/lmtt/m/n/10.95 mask_grille
+_texture_large_*\T1/lmr/m/n/10.95 -
+ []
+
+
+Overfull \hbox (12.37123pt too wide) in paragraph at lines 712--713
+\T1/lmr/m/n/10.95 le fehlt), er-zeugt der Ker-nel die Mas-ke di-rekt ma-the-ma-
+tisch: Je-de RGB-Triade ist \T1/lmtt/m/n/10.95 mask_triad_size
+ []
+
+[14]
+Overfull \hbox (25.47374pt too wide) in paragraph at lines 721--722
+[]\T1/lmr/m/it/10.95 Manuelle Lanczos-Resize-LUT (Slang-Passes 5+6)\T1/lmr/m/n/
+10.95 : in Ite-ra-ti-on 15 por-tiert. \T1/lmtt/m/n/10.95 mask_sample_mode\T1/lm
+r/m/n/10.95 =0-
+ []
+
+
+Overfull \hbox (7.58217pt too wide) in paragraph at lines 761--762
+[]\T1/lmr/bx/n/10.95 Validierung. \T1/lmr/m/n/10.95 Pro Pass-3-Lauf wer-den zwe
+i mask-spezifische Sanity-Invarianten ge-prüft (Subpixel-
+ []
+
+[15]
+Overfull \hbox (70.21349pt too wide) in paragraph at lines 783--784
+[]\T1/lmr/bx/n/10.95 Algebra. \T1/lmr/m/n/10.95 Die vol-le Her-lei-tung steht i
+n Trog-gle-Mon-key's Kom-men-ta-ren in \T1/lmtt/m/n/10.95 crt-royale-brightpass
+.h:113-163
+ []
+
+[16]
+Overfull \hbox (79.71855pt too wide) in paragraph at lines 787--788
+[]\T1/lmr/m/n/10.95 Sigma + Center-Weight aus sta-ti-schen Slang-Defaults: $\OM
+L/lmm/m/it/10.95 ^^[ \OT1/lmr/m/n/10.95 = []([]\OML/lmm/m/it/10.95 ; []\OT1/lmr
+/m/n/10.95 ) \OMS/lmsy/m/n/10.95 ^^Y
+ []
+
+
+Underfull \hbox (badness 10000) in alignment at lines 813--813
+[][][][][] 
+ []
+
+
+Overfull \hbox (131.23274pt too wide) in paragraph at lines 824--825
+[]\T1/lmr/m/n/10.95 welche LUT-PNG ge-la-den wird (\T1/lmtt/m/n/10.95 TileableL
+inearApertureGrille15Wide...\T1/lmr/m/n/10.95 , \T1/lmtt/m/n/10.95 TileableLine
+arSlotMaskTall15Wide...
+ []
+
+
+Overfull \hbox (115.18929pt too wide) in paragraph at lines 825--826
+[]\T1/lmr/m/n/10.95 welcher \T1/lmtt/m/n/10.95 mask_amplify\T1/lmr/m/n/10.95 -W
+ert -- ab-ge-lei-tet aus dem Average-Color der je-wei-li-gen LUT (\T1/lmtt/m/n/
+10.95 user-cgp-constants.h:40-46\T1/lmr/m/n/10.95 ):
+ []
+
+[17]
+Underfull \hbox (badness 10000) in alignment at lines 847--847
+[][][][][] 
+ []
+
+
+Overfull \hbox (69.059pt too wide) in paragraph at lines 859--860
+[]\T1/lmr/bx/n/10.95 Separable 9-tap Gaus-si-an (tex2Dblur9fast). \T1/lmr/m/n/1
+0.95 Slang's blur-Implementation in \T1/lmtt/m/n/10.95 blur-functions.h:416-444
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 681--682
+Overfull \hbox (17.52292pt too wide) in paragraph at lines 868--870
+\T1/lmr/m/n/10.95 Brightpass und dim-pass sind kom-ple-men-tär: zu-sam-men er-g
+e-ben sie wie-der MAS-KED_SCANLINES.
+ []
+
+[18]
+Overfull \hbox (21.61926pt too wide) in paragraph at lines 897--898
+\T1/lmr/bx/n/10.95 Algorithmus. \T1/lmr/m/n/10.95 Se-pa-ra-bler Lanczos-Sinc-Re
+sampler. Slang nutzt \T1/lmtt/m/n/10.95 downsample_vertical_sinc_tiled
+ []
+
+
+Overfull \hbox (6.08414pt too wide) in paragraph at lines 897--898
+\T1/lmr/m/n/10.95 und \T1/lmtt/m/n/10.95 downsample_horizontal_sinc_tiled \T1/l
+mr/m/n/10.95 aus \T1/lmtt/m/n/10.95 phosphor-mask-resizing.h \T1/lmr/m/n/10.95 
+(~700 Zei-len Helper-
+ []
+
+
+Overfull \hbox (104.84242pt too wide) in paragraph at lines 900--901
+\T1/lmr/m/n/10.95 sa-mer Helper-Funktion \T1/lmtt/m/n/10.95 mr_downsample_sinc_
+1d\T1/lmr/m/n/10.95 . Sta-ti-sche 24-Sample-Loop (= Slangs \T1/lmtt/m/n/10.95 m
+ax_sinc_resize_samples_m4
+ []
+
+
+Overfull \hbox (14.01193pt too wide) in paragraph at lines 903--904
+\T1/lmr/m/n/10.95 stan-ten-ket-te in \T1/lmtt/m/n/10.95 derived-settings-and-co
+nstants.h \T1/lmr/m/n/10.95 ver-zweigt über De-fi-nes wie \T1/lmtt/m/n/10.95 GE
+OMETRY_EARLY\T1/lmr/m/n/10.95 ,
+ []
+
+[19]
+Overfull \hbox (11.27304pt too wide) in paragraph at lines 906--907
+\T1/lmr/m/n/10.95 sam-pelt; Pass 7 holt sei-ne Mask-Werte di-rekt aus der groÿe
+n LUT über GPU-Mipmap+Anisotropie.
+ []
+
+
+Underfull \hbox (badness 10000) in alignment at lines 931--931
+[][][][][] 
+ []
+
+
+Overfull \hbox (8.09352pt too wide) in paragraph at lines 940--941
+\T1/lmr/m/n/10.95 Die-se Ite-ra-ti-on por-tiert den Default-Pfad bit-exakt und 
+er-setzt die vor-he-ri-ge Barrel-Approximation
+ []
+
+[20]
+Overfull \hbox (38.59625pt too wide) in paragraph at lines 943--944
+[]\T1/lmr/bx/n/10.95 Default-Pfad-Analyse. \T1/lmr/m/n/10.95 Mit \T1/lmtt/m/n/1
+0.95 geom_mode=0\T1/lmr/m/n/10.95 , \T1/lmtt/m/n/10.95 aa_level=12\T1/lmr/m/n/1
+0.95 , \T1/lmtt/m/n/10.95 geom_overscan=(1,1)\T1/lmr/m/n/10.95 , \T1/lmtt/m/n/1
+0.95 halation_weight=0
+ []
+
+
+Overfull \hbox (19.86246pt too wide) in paragraph at lines 954--955
+[]\T1/lmr/m/n/10.95 Map flat out-put uv $\OMS/lmsy/m/n/10.95 !$ \T1/lmr/m/n/10.
+95 3D view-vec im CRT-lokalen Ko-or-di-na-ten-f-ra-me (\T1/lmtt/m/n/10.95 view_
+vec = (view_uv.x,
+ []
+
+
+Overfull \hbox (50.30463pt too wide) in paragraph at lines 965--966
+[]\T1/lmr/bx/n/10.95 Verzicht auf Pixel-zu-Tangent-Matrix. \T1/lmr/m/n/10.95 Sl
+ang's \T1/lmtt/m/n/10.95 tex2Daa \T1/lmr/m/n/10.95 er-war-tet einen \T1/lmtt/m/
+n/10.95 pixel_to_tangent_video_uv\T1/lmr/m/n/10.95 -
+ []
+
+
+Overfull \hbox (60.66025pt too wide) in paragraph at lines 965--966
+\T1/lmr/m/n/10.95 nicht. Slang's Fall-back oh-ne De-ri-va-ti-ves (\T1/lmtt/m/n/
+10.95 get_pixel_to_object_matrix $\OMS/lmsy/m/n/10.95 ^^N$ \T1/lmtt/m/n/10.95 g
+et_object_to_tangent_matrix\T1/lmr/m/n/10.95 ,
+ []
+
+[21]
+Overfull \hbox (19.57948pt too wide) in paragraph at lines 973--974
+\T1/lmr/m/n/10.95 ein-ge-führt so-wie ein UI-Picker \T1/lmtt/m/n/10.95 Debug ->
+ Show Pass \T1/lmr/m/n/10.95 mit den Op-tio-nen \T1/lmtt/m/n/10.95 Final\T1/lmr
+/m/n/10.95 , \T1/lmtt/m/n/10.95 Pass 1 (Linearize)\T1/lmr/m/n/10.95 ,
+ []
+
+
+Overfull \hbox (39.12349pt too wide) in paragraph at lines 984--985
+\T1/lmr/m/n/10.95 nächs-ten \T1/lmtt/m/n/10.95 apply()\T1/lmr/m/n/10.95 -Aufruf
+ wird die ak-tu-ell an-ge-zeig-te Output-Textur über einen \T1/lmtt/m/n/10.95 M
+TLBlitCommandEncoder
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1001--1002
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 682--683
+Overfull \hbox (10.35677pt too wide) in paragraph at lines 1002--1003
+[]\T1/lmr/bx/n/10.95 Swift-Runner \T1/lmr/m/n/10.95 (\T1/lmtt/m/n/10.95 tests/S
+wiftRunner/\T1/lmr/m/n/10.95 , ei-gen-stän-di-ges Swift Packa-ge): Lädt ei-ne P
+NG-Eingabe,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1002--1003
+
+ []
+
+[22]
+Underfull \hbox (badness 10000) in paragraph at lines 1003--1004
+
+ []
+
+<per-pass-montage.png, id=556, 949.5475pt x 813.0375pt>
+File: per-pass-montage.png Graphic file (type png)
+<use per-pass-montage.png>
+Package pdftex.def Info: per-pass-montage.png  used on input line 1016.
+(pdftex.def)             Requested size: 455.24411pt x 389.79456pt.
+[23] [24 <./per-pass-montage.png (PNG copy)>] [25]
+Underfull \hbox (badness 10000) in alignment at lines 1096--1096
+[][][][][] 
+ []
+
+
+Underfull \hbox (badness 10000) in alignment at lines 1126--1126
+[][][][][] 
+ []
+
+[26] [27]
+Underfull \hbox (badness 10000) in paragraph at lines 1163--1163
+[]|\T1/lmr/m/n/10 Swift-Integrationsklasse +
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1163--1163
+[]|\T1/lmr/m/n/10 Standalone-Mirror
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1163--1163
+\T1/lmr/m/n/10 BLOOM_APPROX (bi-li-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1163--1163
+[]|\T1/lmr/m/n/10 Standalone-Mirror BRIGHT-
+ []
+
+
+Underfull \hbox (badness 7030) in paragraph at lines 1163--1163
+[]|\T1/lmr/m/n/10 Headless Validierungs-Runner
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1163--1163
+[]|\T1/lmr/m/n/10 Generator de-ter-mi-nis-ti-scher
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1163--1163
+[]|\T1/lmr/m/n/10 Master-Skript der Pi-pe-li-ne
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1163--1163
+[]|\T1/lmr/m/n/10 Statistischer Pass-Analyzer
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1163--1163
+[]|\T1/lmr/m/n/10 Reference-Snapshots via
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1163--1163
+[]|\T1/lmr/m/n/10 Batch-Diff al-ler (Pat-tern,
+ []
+
+
+Overfull \hbox (0.13167pt too wide) in paragraph at lines 1175--1177
+\T1/lmr/m/n/10.95 Die Va-li-die-rung er-folgt durch \T1/lmr/bx/n/10.95 quan-ti-
+ta-ti-ven Per-Pass-Vergleich \T1/lmr/m/n/10.95 zwi-schen dem Slang-Original
+ []
+
+[28] [29] [30]
+Overfull \hbox (83.43935pt too wide) in paragraph at lines 1283--1284
+\T1/lmr/m/n/10.95 Pixelgenaue Va-li-die-rung ge-gen die Slang-Reference via \T1
+/lmtt/m/n/10.95 librashader-cli\T1/lmr/m/n/10.95 . Default-Settings, \T1/lmtt/m
+/n/10.95 mask_sample_mode=1\T1/lmr/m/n/10.95 : 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1331--1331
+[]|\T1/lmr/bx/n/10 CRT-Royale (die-ser
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1331--1331
+[]|\T1/lmr/m/n/10 MPS-basiert (Resam-ple
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1331--1331
+[]|\T1/lmr/m/n/10 Generalized Gaus-si-an
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1331--1331
+[]|\T1/lmr/m/n/10 Sphere-Raycaster (full
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1331--1331
+[]|\T1/lmr/m/n/10 16-tap Catmull-Rom-
+ []
+
+
+Overfull \hbox (139.35619pt too wide) in paragraph at lines 1343--1344
+[]\T1/lmr/bx/n/10.95 Mask-Resize V/H Mode-0-Pfad\T1/lmr/m/n/10.95 : nicht bit-e
+xakt vs. \T1/lmtt/m/n/10.95 librashader-cli\T1/lmr/m/n/10.95 . Grund: \T1/lmtt/
+m/n/10.95 derived-settings-and-constants.h\T1/lmr/m/n/10.95 -
+ []
+
+
+Overfull \hbox (9.55193pt too wide) in paragraph at lines 1343--1344
+\T1/lmr/m/n/10.95 der an-ders auf-ge-löst als un-se-re sta-ti-sche Hand-Trace -
+- die \T1/lmtt/m/n/10.95 mask_resize_tile_size\T1/lmr/m/n/10.95 -Berechnung
+ []
+
+[31]
+Overfull \hbox (235.57945pt too wide) in paragraph at lines 1359--1370
+ [][] 
+ []
+
+
+Overfull \hbox (14.0174pt too wide) in paragraph at lines 1378--1397
+ [][] 
+ []
+
+[32]
+Underfull \hbox (badness 10000) in paragraph at lines 1407--1408
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 683--684
-
- []
-
-[11]
-Underfull \hbox (badness 10000) in paragraph at lines 720--721
+Underfull \hbox (badness 10000) in paragraph at lines 1408--1409
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 721--722
+Underfull \hbox (badness 10000) in paragraph at lines 1409--1410
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 728--729
+Underfull \hbox (badness 10000) in paragraph at lines 1410--1411
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 729--730
+Underfull \hbox (badness 10000) in paragraph at lines 1411--1412
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 730--731
-
- []
-
-[12]
-Underfull \hbox (badness 10000) in paragraph at lines 793--794
+Underfull \hbox (badness 10000) in paragraph at lines 1418--1419
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 794--795
+Underfull \hbox (badness 10000) in paragraph at lines 1419--1420
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 795--796
+Underfull \hbox (badness 10000) in paragraph at lines 1420--1421
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 796--797
+Underfull \hbox (badness 10000) in paragraph at lines 1421--1422
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 797--798
+Underfull \hbox (badness 10000) in paragraph at lines 1422--1423
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 804--805
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 805--806
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 806--807
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 807--808
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 808--809
-
- []
-
-[13] [14] (./dokumentation.aux)
+[33] [34] (./dokumentation.aux)
 Package rerunfilecheck Info: File `dokumentation.out' has not changed.
-(rerunfilecheck)             Checksum: 26985E2455EA987127474B2FA64F149A;5571.
+(rerunfilecheck)             Checksum: DED4553FB43A444A62CF49179012495B;8989.
  ) 
 Here is how much of TeX's memory you used:
- 29756 strings out of 478268
- 557273 string characters out of 5846346
- 1295016 words of memory out of 5000000
- 47306 multiletter control sequences out of 15000+600000
- 545781 words of font info for 83 fonts, out of 8000000 for 9000
+ 30058 strings out of 478268
+ 561230 string characters out of 5846346
+ 1319259 words of memory out of 5000000
+ 47474 multiletter control sequences out of 15000+600000
+ 589394 words of font info for 97 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 84i,15n,80p,1202b,1310s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,15n,80p,1202b,1927s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {/usr/local/texlive/2022/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/lo
-cal/texlive/2022/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/20
-22/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/texlive/2022/texmf-dist/
-fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2022/texmf-dist/fonts/enc/
-dvips/lm/lm-ts1.enc}</usr/local/texlive/2022/texmf-dist/fonts/type1/public/lm/l
-mbx10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmbx12.pfb>
-</usr/local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmmi10.pfb></usr/loca
-l/texlive/2022/texmf-dist/fonts/type1/public/lm/lmmi7.pfb></usr/local/texlive/2
-022/texmf-dist/fonts/type1/public/lm/lmr10.pfb></usr/local/texlive/2022/texmf-d
-ist/fonts/type1/public/lm/lmr12.pfb></usr/local/texlive/2022/texmf-dist/fonts/t
-ype1/public/lm/lmr6.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/
-lm/lmr8.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmri10.pf
-b></usr/local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/lo
-cal/texlive/2022/texmf-dist/fonts/type1/public/lm/lmtk10.pfb></usr/local/texliv
-e/2022/texmf-dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texlive/2022/tex
-mf-dist/fonts/type1/public/lm/lmtti10.pfb></usr/local/texlive/2022/texmf-dist/f
-onts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on dokumentation.pdf (15 pages, 457365 bytes).
+cal/texlive/2022/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/texlive/20
+22/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2022/texmf-d
+ist/fonts/enc/dvips/lm/lm-mathex.enc}{/usr/local/texlive/2022/texmf-dist/fonts/
+enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/2022/texmf-dist/fonts/enc/dvips/lm/l
+m-ts1.enc}</usr/local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmbx10.pfb>
+</usr/local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/loca
+l/texlive/2022/texmf-dist/fonts/type1/public/lm/lmex10.pfb></usr/local/texlive/
+2022/texmf-dist/fonts/type1/public/lm/lmmi10.pfb></usr/local/texlive/2022/texmf
+-dist/fonts/type1/public/lm/lmmi6.pfb></usr/local/texlive/2022/texmf-dist/fonts
+/type1/public/lm/lmmi7.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/publ
+ic/lm/lmmi8.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmr10
+.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmr12.pfb></usr/
+local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmr6.pfb></usr/local/texliv
+e/2022/texmf-dist/fonts/type1/public/lm/lmr7.pfb></usr/local/texlive/2022/texmf
+-dist/fonts/type1/public/lm/lmr8.pfb></usr/local/texlive/2022/texmf-dist/fonts/
+type1/public/lm/lmri10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/publ
+ic/lm/lmsy10.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmsy
+8.pfb></usr/local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmtk10.pfb></us
+r/local/texlive/2022/texmf-dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/te
+xlive/2022/texmf-dist/fonts/type1/public/lm/lmtti10.pfb></usr/local/texlive/202
+2/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
+Output written on dokumentation.pdf (35 pages, 713841 bytes).
 PDF statistics:
- 485 PDF objects out of 1000 (max. 8388607)
- 432 compressed objects within 5 object streams
- 155 named destinations out of 1000 (max. 500000)
- 322 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 806 PDF objects out of 1000 (max. 8388607)
+ 716 compressed objects within 8 object streams
+ 278 named destinations out of 1000 (max. 500000)
+ 447 words of extra memory for PDF output out of 10000 (max. 10000000)
 
