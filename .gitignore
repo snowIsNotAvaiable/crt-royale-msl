@@ -10,9 +10,8 @@ DerivedData/
 *.air
 *.metallib
 
-# Documentation (nur Markdown-Docs ignorieren, Bericht behalten)
-docs/*.md
-docs/Timeline/
+# Documentation (privat -- Bericht, Status, Phase-4-Evaluation etc.)
+docs/
 
 # Swift Package build artifacts (regenerable via tests/validate.sh)
 .build/
