@@ -1,0 +1,109 @@
+--- /tmp/_head_project.pbxproj	2026-06-02 16:46:04
++++ RetroVisor.xcodeproj/project.pbxproj	2026-05-11 12:09:46
+@@ -7,6 +7,7 @@
+ 	objects = {
+ 
+ /* Begin PBXBuildFile section */
++		29D0EA8247D8FE8585F9E0F3 /* CrtRoyale.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C12E8D88BE8E56249AED606 /* CrtRoyale.swift */; };
+ 		50079E6E2E4331F5005BC5FD /* Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50079E6D2E4331F2005BC5FD /* Menu.swift */; };
+ 		50079E712E43813C005BC5FD /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50079E702E438139005BC5FD /* Extensions.swift */; };
+ 		5011EDEB2E6317DE00B0938A /* Sankara.metal in Sources */ = {isa = PBXBuildFile; fileRef = 5011EDEA2E6317D500B0938A /* Sankara.metal */; };
+@@ -48,6 +49,7 @@
+ 		50BA96592E3C80F5006BA8DF /* TrackingWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50BA96582E3C80F2006BA8DF /* TrackingWindow.swift */; };
+ 		50BA965B2E3D4865006BA8DF /* Animated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50BA965A2E3D4861006BA8DF /* Animated.swift */; };
+ 		50BA965F2E3F6AA1006BA8DF /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 50BA965E2E3F6AA1006BA8DF /* Credits.rtf */; };
++		50CA70112E5D6B81006BA8DF /* TileableLinearApertureGrille15Wide8And5d5Spacing.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CA70102E5D6B81006BA8DF /* TileableLinearApertureGrille15Wide8And5d5Spacing.png */; };
+ 		50BA96642E3FF0B3006BA8DF /* CrtEasy.metal in Sources */ = {isa = PBXBuildFile; fileRef = 50BA96632E3FF0B3006BA8DF /* CrtEasy.metal */; };
+ 		50BA966D2E40C3CB006BA8DF /* ShaderTableCellViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50BA966C2E40C3CB006BA8DF /* ShaderTableCellViews.swift */; };
+ 		50DE5B842E4CDB08002C07EC /* Loggable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50DE5B832E4CDB02002C07EC /* Loggable.swift */; };
+@@ -55,6 +57,7 @@
+ 		50DE5B882E4E0666002C07EC /* IconBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50DE5B872E4E065D002C07EC /* IconBar.swift */; };
+ 		CB62DCB12F84C17100B1AEDC /* VHS.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB62DCB02F84C17100B1AEDC /* VHS.swift */; };
+ 		CB62DCB32F84C17D00B1AEDC /* VHS.metal in Sources */ = {isa = PBXBuildFile; fileRef = CB62DCB22F84C17D00B1AEDC /* VHS.metal */; };
++		D65598C80ED6ADFF7D3DA7EB /* CrtRoyale.metal in Sources */ = {isa = PBXBuildFile; fileRef = 8573AC5DBC079871C024C27B /* CrtRoyale.metal */; };
+ /* End PBXBuildFile section */
+ 
+ /* Begin PBXFileReference section */
+@@ -103,6 +106,7 @@
+ 		50BA96582E3C80F2006BA8DF /* TrackingWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingWindow.swift; sourceTree = "<group>"; };
+ 		50BA965A2E3D4861006BA8DF /* Animated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animated.swift; sourceTree = "<group>"; };
+ 		50BA965E2E3F6AA1006BA8DF /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
++		50CA70102E5D6B81006BA8DF /* TileableLinearApertureGrille15Wide8And5d5Spacing.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TileableLinearApertureGrille15Wide8And5d5Spacing.png; sourceTree = "<group>"; };
+ 		50BA96632E3FF0B3006BA8DF /* CrtEasy.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = CrtEasy.metal; sourceTree = "<group>"; };
+ 		50BA966C2E40C3CB006BA8DF /* ShaderTableCellViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShaderTableCellViews.swift; sourceTree = "<group>"; };
+ 		50DE5B832E4CDB02002C07EC /* Loggable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loggable.swift; sourceTree = "<group>"; };
+@@ -110,6 +114,8 @@
+ 		50DE5B872E4E065D002C07EC /* IconBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBar.swift; sourceTree = "<group>"; };
+ 		CB62DCB02F84C17100B1AEDC /* VHS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VHS.swift; sourceTree = "<group>"; };
+ 		CB62DCB22F84C17D00B1AEDC /* VHS.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = VHS.metal; sourceTree = "<group>"; };
++		7C12E8D88BE8E56249AED606 /* CrtRoyale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrtRoyale.swift; sourceTree = "<group>"; };
++		8573AC5DBC079871C024C27B /* CrtRoyale.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = CrtRoyale.metal; sourceTree = "<group>"; };
+ /* End PBXFileReference section */
+ 
+ /* Begin PBXFrameworksBuildPhase section */
+@@ -179,6 +185,7 @@
+ 				504F539F2E6173C300C5291F /* ColorSplitter.swift */,
+ 				5069364F2E4EFEFB0037984F /* CrtEasy.swift */,
+ 				CB62DCB02F84C17100B1AEDC /* VHS.swift */,
++				7C12E8D88BE8E56249AED606 /* CrtRoyale.swift */,
+ 				5011EDEC2E6317EC00B0938A /* Sankara.swift */,
+ 			);
+ 			path = Shaders;
+@@ -225,6 +232,7 @@
+ 			isa = PBXGroup;
+ 			children = (
+ 				50BA965E2E3F6AA1006BA8DF /* Credits.rtf */,
++				50CA70102E5D6B81006BA8DF /* TileableLinearApertureGrille15Wide8And5d5Spacing.png */,
+ 			);
+ 			path = Resources;
+ 			sourceTree = "<group>";
+@@ -240,6 +248,7 @@
+ 				504F53A12E6179AE00C5291F /* ColorSplitter.metal */,
+ 				50BA96632E3FF0B3006BA8DF /* CrtEasy.metal */,
+ 				CB62DCB22F84C17D00B1AEDC /* VHS.metal */,
++				8573AC5DBC079871C024C27B /* CrtRoyale.metal */,
+ 				5011EDEA2E6317D500B0938A /* Sankara.metal */,
+ 			);
+ 			path = GPU;
+@@ -309,6 +318,7 @@
+ 				50BA96552E3C80D6006BA8DF /* Assets.xcassets in Resources */,
+ 				50BA965F2E3F6AA1006BA8DF /* Credits.rtf in Resources */,
+ 				50BA96562E3C80D6006BA8DF /* Main.storyboard in Resources */,
++				50CA70112E5D6B81006BA8DF /* TileableLinearApertureGrille15Wide8And5d5Spacing.png in Resources */,
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 		};
+@@ -325,6 +335,7 @@
+ 				50BA964F2E3C80D6006BA8DF /* AppDelegate.swift in Sources */,
+ 				503FCC2B2E48F2E500EF49DA /* RecorderPreferencesViewController.swift in Sources */,
+ 				506936502E4EFF160037984F /* CrtEasy.swift in Sources */,
++				29D0EA8247D8FE8585F9E0F3 /* CrtRoyale.swift in Sources */,
+ 				50292D962E471AAA0084CFE3 /* PermissionViewController.swift in Sources */,
+ 				503FCC2D2E48F5A300EF49DA /* Recorder.swift in Sources */,
+ 				50BA96592E3C80F5006BA8DF /* TrackingWindow.swift in Sources */,
+@@ -338,6 +349,7 @@
+ 				509E84C32E57584400384C75 /* ImageToolbox.swift in Sources */,
+ 				50BA96512E3C80D6006BA8DF /* ViewController.swift in Sources */,
+ 				50BA96642E3FF0B3006BA8DF /* CrtEasy.metal in Sources */,
++				D65598C80ED6ADFF7D3DA7EB /* CrtRoyale.metal in Sources */,
+ 				503FCC212E48688600EF49DA /* SidebarViewController.swift in Sources */,
+ 				50079E6E2E4331F5005BC5FD /* Menu.swift in Sources */,
+ 				50BA965B2E3D4865006BA8DF /* Animated.swift in Sources */,
+@@ -515,7 +527,7 @@
+ 				COMBINE_HIDPI_IMAGES = YES;
+ 				CURRENT_PROJECT_VERSION = 250916.5;
+ 				DEAD_CODE_STRIPPING = YES;
+-				DEVELOPMENT_TEAM = 3NG65ZLYW7;
++				DEVELOPMENT_TEAM = DE5NE5FRPX;
+ 				ENABLE_APP_SANDBOX = YES;
+ 				ENABLE_HARDENED_RUNTIME = YES;
+ 				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
+@@ -549,7 +561,7 @@
+ 				COMBINE_HIDPI_IMAGES = YES;
+ 				CURRENT_PROJECT_VERSION = 250916.5;
+ 				DEAD_CODE_STRIPPING = YES;
+-				DEVELOPMENT_TEAM = 3NG65ZLYW7;
++				DEVELOPMENT_TEAM = DE5NE5FRPX;
+ 				ENABLE_APP_SANDBOX = YES;
+ 				ENABLE_HARDENED_RUNTIME = YES;
+ 				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
