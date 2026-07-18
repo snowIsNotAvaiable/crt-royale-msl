@@ -1,0 +1,11 @@
+# Python-Abhängigkeiten der Validierungs-Pipeline und der Figuren-Generierung.
+# Setup:
+#   python3 -m venv .venv
+#   .venv/bin/pip install -r requirements.txt
+# Die Test-Skripte (tests/validate.sh, tests/compare_all.sh) nutzen .venv/bin/python3
+# automatisch, falls vorhanden; sonst das System-python3.
+numpy==2.5.1
+Pillow==12.3.0
+colour-science==0.4.7     # ΔE2000 (tools/compare.py)
+scikit-image==0.26.0      # SSIM   (tools/compare.py)
+matplotlib==3.11.0        # Berichts-Abbildungen (tools/make_figures.py, make_extra_figures.py)

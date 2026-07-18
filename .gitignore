@@ -13,6 +13,9 @@ DerivedData/
 # Documentation (privat -- Bericht, Status, Phase-4-Evaluation etc.)
 docs/
 
+# Python-venv (Setup: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt)
+.venv/
+
 # Swift Package build artifacts (regenerable via tests/validate.sh)
 .build/
 .swiftpm/
