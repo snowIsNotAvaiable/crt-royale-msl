@@ -23,6 +23,11 @@ OUT_DEFAULT="$HERE/outputs/default"
 RUNNER_DIR="$HERE/SwiftRunner"
 SCALE="${CRT_ROYALE_SCALE:-4}"
 
+# Projekt-venv bevorzugen (siehe requirements.txt), sonst System-python3.
+PY="$REPO_ROOT/.venv/bin/python3"
+[[ -x "$PY" ]] || PY="python3"
+export CRT_ROYALE_PY="$PY"
+
 if [[ ! -f "$METAL_SRC" ]]; then
     echo "FATAL: cannot find CrtRoyale.metal at $METAL_SRC" >&2
     echo "       set CRT_ROYALE_METAL_SRC env var to override." >&2
@@ -30,7 +35,7 @@ if [[ ! -f "$METAL_SRC" ]]; then
 fi
 
 echo "==> [1/5] Generating test inputs"
-python3 "$INPUTS_DIR/generate.py"
+"$PY" "$INPUTS_DIR/generate.py"
 
 echo
 echo "==> [2/5] Building Swift runner"
@@ -75,9 +80,9 @@ run_suite default "$OUT_DEFAULT" ""
 echo
 echo "==> [5/5] Analyzing outputs"
 neutral_status=0; default_status=0
-python3 "$REPO_ROOT/tools/analyze.py" "$OUT_NEUTRAL" --mode neutral || neutral_status=$?
+"$PY" "$REPO_ROOT/tools/analyze.py" "$OUT_NEUTRAL" --mode neutral || neutral_status=$?
 echo
-python3 "$REPO_ROOT/tools/analyze.py" "$OUT_DEFAULT" --mode default || default_status=$?
+"$PY" "$REPO_ROOT/tools/analyze.py" "$OUT_DEFAULT" --mode default || default_status=$?
 
 if (( neutral_status != 0 || default_status != 0 )); then
     echo

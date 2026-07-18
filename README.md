@@ -49,7 +49,9 @@ some-workspace/
 │   │   └── compare_all.sh        # Batch-Vergleich Outputs vs. Referenz
 │   ├── tools/
 │   │   ├── compare.py            # ΔE2000 + SSIM + Heatmap
-│   │   └── analyze.py            # Sanity-Checks für SwiftRunner-Outputs
+│   │   ├── analyze.py            # Sanity-Checks für SwiftRunner-Outputs
+│   │   ├── make_figures.py       # Berichts-Abbildungen (Charts) aus den Test-Artefakten
+│   │   └── make_extra_figures.py # Mask-Typ-/Curvature-Vergleiche, Pipeline-Strip, GIFs
 │   ├── textures/                 # Arbeitskopien der Mask-LUTs
 │   └── docs/                     # NICHT versioniert – privat (Bericht, Status etc.)
 ├── vendor/
@@ -63,7 +65,15 @@ some-workspace/
 
 - macOS 13+ (getestet auf Apple Silicon; Intel sollte funktionieren), <br>oder Linux für die Tests (App-Build nur unter macOS).
 - Xcode 15+ (für `swift build` und MSL-Compilation auf macOS).
-- Python 3.9+ mit `numpy`, `Pillow`, `scikit-image` (für `compare.py` und `analyze.py`).
+- Python 3.9+ — Abhängigkeiten gepinnt in [`requirements.txt`](requirements.txt):
+
+  ```bash
+  cd crt-royale-msl
+  python3 -m venv .venv
+  .venv/bin/pip install -r requirements.txt
+  ```
+
+  Die Test-Skripte nutzen `.venv/bin/python3` automatisch, falls vorhanden <br>(sonst das System-`python3`, das dann die Pakete global braucht).
 - Rust + librashader-cli (optional, für Referenz-Snapshots).
 
 ### 1) Vendor-Repositories klonen (parallel zu diesem Repo)
@@ -75,6 +85,13 @@ git clone git@github.com:dirkwhoffmann/RetroVisor.git
 git clone git@github.com:libretro/slang-shaders.git
 cd ..
 ```
+
+Zuletzt getestet gegen diese Vendor-Commits (bei Inkompatibilitäten dorthin zurück-checkouten):
+
+| Repo | Commit | Datum |
+|---|---|---|
+| RetroVisor | `816ea03702beb2993b56f977dd1af1ad19323069` | 2026-04-07 |
+| slang-shaders | `8664723db1122ef6b785f92cf1ddff6275319438` | 2026-03-26 |
 
 ### 2) Integrations-Setup ausführen
 
