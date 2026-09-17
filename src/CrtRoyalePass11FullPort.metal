@@ -34,12 +34,14 @@
 //      maps the intersection point through sphere_xyz_to_uv (great-circle
 //      arc length parameterization), recenters around 0.5.
 //
-//   2. **9-tap Gaussian AA** (g4_tex2Daa) with per-channel R subpixel
-//      offset of (-1/3, 0). Slang uses a 12-tap Catmull-Rom-cubic in a
-//      quincunx pattern (~1400 lines of tex2Dantialias.h covering 10
-//      filter types and 11 sample-count configurations); we approximate
-//      with a 3x3 Gaussian kernel (sigma=0.5px). The visual role is moire
-//      suppression under sphere magnification.
+//   2. **16-tap Catmull-Rom-cubic AA** (g4_tex2Daa) with per-channel R
+//      subpixel offset of (-1/3, 0). Slang's aa_level=12 default selects a
+//      12-sample subset of a 4x4 Catmull-Rom grid (~1400 lines of
+//      tex2Dantialias.h covering 10 filter types and 11 sample-count
+//      configurations); we evaluate the full 4x4 grid, which is equivalent
+//      in expectation because the 4 extra corner taps carry near-zero
+//      weight. The visual role is moire suppression under sphere
+//      magnification.
 //
 //   3. **Subpixel-R-offset** baked into the AA kernel. R is sampled at
 //      -1/3 px (slang's aa_subpixel_r_offset_static.x), B at +1/3 px, G
@@ -53,7 +55,8 @@
 //   - **Runtime geom_tilt_angle**: default (0, 0) so the global_to_local
 //     rotation matrix is identity and we can skip the entire vertex-shader
 //     matrix machinery.
-//   - **tex2Daa with configurable aa_filter (0..9)**: we fix Gaussian.
+//   - **tex2Daa with configurable aa_filter (0..9)**: we fix the default
+//     cubic filter with Catmull-Rom parameters (B=0, C=0.5).
 //   - **aa_temporal** (per-frame sample-grid jitter): off in slang too.
 //   - **get_pixel_to_object / get_object_to_tangent matrices**: those
 //     compute a pixel-space-to-tangent-space matrix for tex2Daa's filter
@@ -98,7 +101,7 @@ namespace crt_royale {
     inline float2 g4_curved_uv(float2 flat_uv, float2 geom_aspect,
                                 float radius);
 
-    // 9-tap Gaussian AA with per-channel R subpixel offset.
+    // 16-tap Catmull-Rom-cubic AA with per-channel R subpixel offset.
     inline float3 g4_tex2Daa(texture2d<float, access::sample> tex, sampler sam,
                               float2 uv, float2 output_size_inv,
                               float2 aa_r_offset);

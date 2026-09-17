@@ -176,27 +176,34 @@ def fig_performance():
 # ---------------------------------------------------------------- Figur 4 --
 # Side-by-side: MSL-Output vs. Slang-Referenz vs. ΔE-Heatmap (2 Patterns)
 def fig_side_by_side():
-    rows = ["colorbars", "grid"]
+    # Einreihig statt 2x3: die Snapshots sind 256x768, also 1:3 hoch. In einem
+    # 2x3-Raster bleibt links und rechts jeder Zelle so viel Weissraum, dass die
+    # Panels im Bericht winzig werden. Sechs Panels nebeneinander haben dagegen
+    # das Seitenverhaeltnis 2:1 und fuellen die Textbreite aus.
+    patterns = ["colorbars", "grid"]
     cols = [
-        ("MSL-Port (Metal)", lambda p: ROOT / "tests/outputs/default" / p / "04-final.png"),
-        ("Slang-Referenz (librashader)", lambda p: ROOT / "tests/reference" / p / "04-final.png"),
-        ("$\\Delta E_{2000}$-Heatmap", lambda p: DIFF / p / "04-final-heat.png"),
+        ("MSL-Port", lambda p: ROOT / "tests/outputs/default" / p / "04-final.png"),
+        ("librashader", lambda p: ROOT / "tests/reference" / p / "04-final.png"),
+        ("$\\Delta E_{2000}$", lambda p: DIFF / p / "04-final-heat.png"),
     ]
-    fig, axes = plt.subplots(len(rows), len(cols), figsize=(6.8, 6.4))
-    for i, pat in enumerate(rows):
+    # Spalte 3 ist eine leere Trennspalte zwischen den beiden Pattern-Gruppen.
+    fig, axes = plt.subplots(1, 7, figsize=(7.2, 4.1),
+                             gridspec_kw={"width_ratios": [1, 1, 1, 0.28, 1, 1, 1]})
+    axes[3].axis("off")
+    slots = [0, 1, 2, 4, 5, 6]
+    for i, pat in enumerate(patterns):
         for j, (title, fn) in enumerate(cols):
-            ax = axes[i, j]
-            img = Image.open(fn(pat))
-            ax.imshow(np.asarray(img), interpolation="nearest")
+            ax = axes[slots[i * len(cols) + j]]
+            ax.imshow(np.asarray(Image.open(fn(pat))), interpolation="nearest")
             ax.set_xticks([]); ax.set_yticks([])
             for s in ax.spines.values():
                 s.set_color(GRID)
-            if i == 0:
-                ax.set_title(title, fontsize=9.5, color=INK, pad=6)
-            if j == 0:
-                ax.set_ylabel(pat, fontsize=9.5, color=INK)
-    fig.tight_layout()
-    fig.savefig(OUT / "fig-final-comparison.png", dpi=220)
+            ax.set_title(title, fontsize=9, color=INK, pad=5)
+            if j == 1:
+                ax.set_xlabel(pat, fontsize=10.5, color=INK, labelpad=6)
+    fig.tight_layout(pad=0.6, w_pad=0.4)
+    fig.savefig(OUT / "fig-final-comparison.png", dpi=220,
+                bbox_inches="tight", pad_inches=0.02)
     plt.close(fig)
 
 

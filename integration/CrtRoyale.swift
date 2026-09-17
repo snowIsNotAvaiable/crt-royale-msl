@@ -2,15 +2,16 @@
 // CRT-Royale for RetroVisor
 //
 // MSL port of TroggleMonkey's CRT-Royale shader.
-// Currently implements: Pass 1 (Linearize + Bob) + Pass 2 (Vertical Scanlines)
-// + Pass 3 (Apply Phosphor Mask, simplified) + Final Encode.
+// Implements the full 12-pass slang pipeline (slang passes 0..11):
+// linearize + bob -> vertical scanlines -> bloom approx -> halation V/H ->
+// mask resize V/H -> apply mask -> brightpass -> bloom V/H reconstitute ->
+// geometry + AA + final encode.
 // Includes per-pass debug picker and PNG snapshot export.
 //
-// Pass-numbering note: our Pass 3 corresponds to Slang Pass 7
-// (`crt-royale-scanlines-horizontal-apply-mask.slang`). Slang Passes 2..6
-// (Bloom Approx, Halation Blur V/H, Mask Resize V/H) are not yet ported and
-// our Pass 3 uses a simplified procedural aperture grille + no halation. See
-// docs/Status.md for the full mapping.
+// Pass-numbering note: the kernel names follow the order in which the passes
+// were ported, not the slang numbering. Our pass3_apply_mask is slang pass 7
+// (`crt-royale-scanlines-horizontal-apply-mask.slang`) and our
+// pass4_geometry_aa is slang pass 11. See docs/Status.md for the full mapping.
 // -----------------------------------------------------------------------------
 
 import MetalKit

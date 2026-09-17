@@ -1,14 +1,23 @@
 // -----------------------------------------------------------------------------
-// CRT-Royale MSL Port -- Compute Kernels (Pass 1 + Pass 2 + Final Encode)
+// CRT-Royale MSL Port -- Compute Kernels (full 12-pass pipeline)
 //
 // Original: crt-royale by TroggleMonkey (GPL v2+)
 // Ported to Metal Shading Language for RetroVisor integration.
 //
-// Currently implemented:
-//   pass1_linearize           -- Linearize CRT gamma + bob interlaced fields
-//   pass2_vertical_scanlines  -- Vertical scanlines / beam distribution
-//   pass_final_encode         -- Re-encode linear -> display gamma (temporary
-//                                stand-in until passes 3..12 are ported)
+// Kernels, in dispatch order (slang pass number in brackets):
+//   pass1_linearize            -- [0]     linearize CRT gamma + bob fields
+//   pass2_vertical_scanlines   -- [1]     beam distribution / scanlines
+//   pass_bloom_approx          -- [2]     4x4 gaussian resize to 320x240
+//   pass_halation_v / _h       -- [3, 4]  9-tap separable halation blur
+//   pass_mask_resize_v / _h    -- [5, 6]  lanczos-sinc resize of the mask LUT
+//   pass3_apply_mask           -- [7]     beam x phosphor mask + halation mix
+//   pass_brightpass            -- [8]     area-based bloom extraction
+//   pass_bloom_v               -- [9]     vertical bloom blur
+//   pass_bloom_h_reconstitute  -- [10]    horizontal bloom + reconstitute
+//   pass4_geometry_aa          -- [11]    geometry + AA + border + encode
+//   pass_final_encode          -- helper: encodes whichever intermediate the
+//                                 host bound, used by the debug picker and by
+//                                 the headless runner's snapshot export
 //
 // Pipeline contract (same throughout the port):
 //   Pass 1 linearizes once. ALL subsequent intermediate textures are
@@ -505,19 +514,18 @@ namespace crt_royale {
     //
     // Slang ref: crt-royale-bloom-approx.h (267 lines). Slang exposes three
     // filter modes via `bloom_approx_filter`:
-    //   0   -- bilinear sample of the source (this implementation)
+    //   0   -- bilinear sample of the source
     //   1   -- 3x3 resize blur with dynamic sigma
-    //   2   -- 4x4 true Gaussian resize (slang default; not yet ported)
+    //   2   -- 4x4 true Gaussian resize (slang default; this implementation)
     //
-    // We implement only the bilinear path here. The reference-capture script
-    // sets `--params bloom_approx_filter=0.0` so that librashader runs the
-    // same path, giving an apples-to-apples comparison. The 4x4 Gaussian
-    // path is a follow-up iteration.
+    // We implement mode 2, the slang default. An earlier iteration used the
+    // bilinear path together with a `--params bloom_approx_filter=0.0`
+    // override on the reference-capture side; that override is gone, so
+    // validation now runs against pure slang defaults.
     //
-    // BLOOM_APPROX is consumed by slang's brightpass (pass 8) and -- when
-    // PHOSPHOR_BLOOM_FAKE is defined -- by apply-mask (pass 7). Neither of
-    // those exists yet in our MSL pipeline; the texture is produced here so
-    // future iterations can wire it in.
+    // BLOOM_APPROX is consumed by the brightpass (pass 8), by halation V
+    // (pass 3) and -- when PHOSPHOR_BLOOM_FAKE is defined -- by apply-mask
+    // (pass 7).
     //
     // Vertex stage (skipped here, compute kernel directly emits per-pixel UV):
     //   For our case ORIG_LINEARIZED_video_size == ORIG_LINEARIZED_texture_size
@@ -1257,10 +1265,11 @@ namespace crt_royale {
     }
 
     // =======================================================================
-    // Pass "last": Re-encode linear -> display gamma.
-    // Temporary stand-in until passes 3..12 land. Honors debug_pass_index by
-    // simply consuming whatever texture the host bound at texture(0) -- the
-    // host decides which intermediate to display.
+    // Helper: re-encode linear -> display gamma.
+    // Not a slang pass of its own; pass4_geometry_aa does the encode for the
+    // real output. This kernel serves the debug picker and the headless
+    // snapshot export: it consumes whatever texture the host bound at
+    // texture(0), so the host decides which intermediate gets displayed.
     // =======================================================================
     kernel void pass_final_encode(
         texture2d<float, access::sample> input   [[ texture(0) ]],

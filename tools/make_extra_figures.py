@@ -28,6 +28,11 @@ OUT.mkdir(parents=True, exist_ok=True)
 WEB.mkdir(parents=True, exist_ok=True)
 DEFAULT_OUT = ROOT / "tests" / "outputs" / "default" / "colorbars"
 
+# Maskentyp-Varianten: erzeugt von tests/capture_mask_variants.sh, also im Repo
+# reproduzierbar. Frueher kam das aus einem Scratch-Verzeichnis, das als
+# Argument uebergeben wurde; damit war die Abbildung nicht nachbaubar.
+MASK_OUT = ROOT / "tests" / "outputs"
+
 SCRATCH = Path(sys.argv[1]) if len(sys.argv) > 1 else None
 
 INK = "#0b0b0b"; INK2 = "#52514e"; GRID = "#e1e0d9"; RED = "#e34948"
@@ -51,22 +56,62 @@ def zoom(img: Image.Image, box, factor=6):
     return c.resize((c.width * factor, c.height * factor), Image.NEAREST)
 
 
-def fig_mask_types():
-    if SCRATCH is None:
-        return
+def mask_variant_paths(shadow_label="Shadow Mask (EDP)"):
     variants = [
-        ("Aperture Grille", DEFAULT_OUT / "04-final.png"),
-        ("Slot Mask", SCRATCH / "out-slot" / "04-final.png"),
-        ("Shadow Mask (EDP)", SCRATCH / "out-shadow" / "04-final.png"),
+        ("Aperture Grille", MASK_OUT / "mask-grille" / "04-final.png"),
+        ("Slot Mask",       MASK_OUT / "mask-slot"   / "04-final.png"),
+        (shadow_label,      MASK_OUT / "mask-shadow" / "04-final.png"),
     ]
-    fig, axes = plt.subplots(1, 3, figsize=(7.0, 2.9))
-    for ax, (name, p) in zip(axes, variants):
-        img = Image.open(p)
-        ax.imshow(np.asarray(zoom(img, (8, 300, 72, 348))), interpolation="nearest")
-        ax.set_title(name, fontsize=9.5, pad=6)
-        ax.set_xticks([]); ax.set_yticks([])
-        for s in ax.spines.values():
-            s.set_color(GRID)
+    if all(p.exists() for _, p in variants):
+        return variants
+    print("  (uebersprungen: tests/capture_mask_variants.sh zuerst laufen lassen)")
+    return None
+
+
+MASK_LUTS = [
+    ROOT / "integration" / "textures"
+         / "TileableLinearApertureGrille15Wide8And5d5Spacing.png",
+    ROOT / "integration" / "textures"
+         / "TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacing.png",
+    ROOT / "integration" / "textures" / "TileableLinearShadowMaskEDP.png",
+]
+
+
+def fig_mask_types():
+    """Zwei Reihen: oben die LUT-Textur, unten der Pipeline-Output.
+
+    Die untere Reihe allein war irrefuehrend: bei der Slang-Default-Triadengroesse
+    von 3 Pixeln mittelt das Mipmap-Sampling die LUT-Struktur so weit weg, dass
+    Grille und Slot im Output fast identisch sind (mittlere RGB-Differenz 0.8 von
+    255). Die obere Reihe zeigt, dass die Masken sehr wohl unterschiedlich sind,
+    und macht den Effekt damit erst interpretierbar.
+    """
+    variants = mask_variant_paths()
+    if variants is None:
+        return
+    if not all(p.exists() for p in MASK_LUTS):
+        print("  (uebersprungen: Mask-LUTs fehlen unter integration/textures/)")
+        return
+
+    fig, axes = plt.subplots(2, 3, figsize=(7.0, 4.6))
+    for col, ((name, out_png), lut_png) in enumerate(zip(variants, MASK_LUTS)):
+        # Obere Reihe: ein Tile der LUT (512 / 8 Triaden = 64 px), 4x vergroessert.
+        lut = Image.open(lut_png).convert("RGB")
+        axes[0][col].imshow(np.asarray(zoom(lut, (0, 0, 64, 48), factor=4)),
+                            interpolation="nearest")
+        axes[0][col].set_title(name, fontsize=9.5, pad=6)
+
+        # Untere Reihe: derselbe Bildausschnitt des fertigen Outputs.
+        axes[1][col].imshow(np.asarray(zoom(Image.open(out_png), (8, 300, 72, 348))),
+                            interpolation="nearest")
+
+    axes[0][0].set_ylabel("LUT-Textur", fontsize=9)
+    axes[1][0].set_ylabel("Pipeline-Output", fontsize=9)
+    for row in axes:
+        for ax in row:
+            ax.set_xticks([]); ax.set_yticks([])
+            for s in ax.spines.values():
+                s.set_color(GRID)
     fig.tight_layout()
     fig.savefig(OUT / "fig-mask-types.png", dpi=220)
     plt.close(fig)
@@ -133,13 +178,9 @@ def gif_pipeline():
 
 
 def gif_mask_types():
-    if SCRATCH is None:
+    variants = mask_variant_paths("Shadow Mask")
+    if variants is None:
         return
-    variants = [
-        ("Aperture Grille", DEFAULT_OUT / "04-final.png"),
-        ("Slot Mask", SCRATCH / "out-slot" / "04-final.png"),
-        ("Shadow Mask", SCRATCH / "out-shadow" / "04-final.png"),
-    ]
     frames = []
     for name, p in variants:
         z = zoom(Image.open(p), (8, 300, 88, 360), factor=5).convert("RGB")
