@@ -29,7 +29,7 @@ Dieses Repository (`crt-royale-msl`) liegt erwartungsgemäß **neben** zwei exte
 some-workspace/
 ├── crt-royale-msl/         ← dieses Repository
 │   ├── integration/        # Source-of-Truth für die RetroVisor-Integration
-│   │   ├── CrtRoyale.metal       # die produktive MSL-Pipeline (~1560 Zeilen)
+│   │   ├── CrtRoyale.metal       # die produktive MSL-Pipeline (~1570 Zeilen)
 │   │   ├── CrtRoyale.swift       # Swift-Integration (Settings, Kernel, Pipeline)
 │   │   ├── textures/             # Phosphor-Mask-LUTs
 │   │   ├── build-patches/        # Patches für die im Vendor-Repo getrackten Dateien
@@ -53,7 +53,7 @@ some-workspace/
 │   │   ├── make_figures.py       # Berichts-Abbildungen (Charts) aus den Test-Artefakten
 │   │   └── make_extra_figures.py # Mask-Typ-/Curvature-Vergleiche, Pipeline-Strip, GIFs
 │   ├── textures/                 # Arbeitskopien der Mask-LUTs
-│   └── docs/                     # NICHT versioniert – privat (Bericht, Status etc.)
+│   └── docs/                     # NICHT versioniert, privat (Bericht, Status etc.)
 ├── vendor/
 │   ├── RetroVisor/         ← `git clone git@github.com:dirkwhoffmann/RetroVisor.git`
 │   └── slang-shaders/      ← `git clone git@github.com:libretro/slang-shaders.git`
@@ -65,7 +65,7 @@ some-workspace/
 
 - macOS 13+ (getestet auf Apple Silicon; Intel sollte funktionieren), <br>oder Linux für die Tests (App-Build nur unter macOS).
 - Xcode 15+ (für `swift build` und MSL-Compilation auf macOS).
-- Python 3.9+ — Abhängigkeiten gepinnt in [`requirements.txt`](requirements.txt):
+- Python 3.9+, Abhängigkeiten gepinnt in [`requirements.txt`](requirements.txt):
 
   ```bash
   cd crt-royale-msl

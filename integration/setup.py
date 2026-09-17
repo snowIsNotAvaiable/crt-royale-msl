@@ -49,11 +49,27 @@ ROOT = HERE.parent.parent
 VENDOR = ROOT / "vendor" / "RetroVisor"
 
 # (canonical_relpath_under_integration, vendor_relpath_under_RetroVisor_dir).
-SYMLINK_FILES = [
-    ("CrtRoyale.metal",                                                       "RetroVisor/GPU/CrtRoyale.metal"),
-    ("CrtRoyale.swift",                                                       "RetroVisor/Shaders/CrtRoyale.swift"),
-    ("textures/TileableLinearApertureGrille15Wide8And5d5Spacing.png",         "RetroVisor/Resources/TileableLinearApertureGrille15Wide8And5d5Spacing.png"),
+#
+# Mask-LUT note: CrtRoyale.swift loads six LUTs by name from the app bundle,
+# three large (mask_type 0/1/2, hardware-resample path) and three 64x64 ones
+# (the mask_sample_mode=0 path). All six are linked here. Only the aperture
+# grille is currently registered in the Xcode Resources build phase via
+# build-patches/01-project.pbxproj.patch, so slot/shadow fall back to grille
+# in the app until that phase lists them too. The headless SwiftRunner is
+# unaffected: it takes --mask-lut / --mask-lut-small as explicit paths.
+_MASK_LUTS = [
+    "TileableLinearApertureGrille15Wide8And5d5Spacing.png",
+    "TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacing.png",
+    "TileableLinearShadowMaskEDP.png",
+    "TileableLinearApertureGrille15Wide8And5d5SpacingResizeTo64.png",
+    "TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacingResizeTo64.png",
+    "TileableLinearShadowMaskEDPResizeTo64.png",
 ]
+
+SYMLINK_FILES = [
+    ("CrtRoyale.metal",  "RetroVisor/GPU/CrtRoyale.metal"),
+    ("CrtRoyale.swift",  "RetroVisor/Shaders/CrtRoyale.swift"),
+] + [(f"textures/{png}", f"RetroVisor/Resources/{png}") for png in _MASK_LUTS]
 
 # Patches applied to upstream-tracked files. Order matters only loosely.
 PATCH_FILES = [
