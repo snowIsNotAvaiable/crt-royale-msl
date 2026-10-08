@@ -1,5 +1,5 @@
---- /tmp/_head_project.pbxproj	2026-06-02 16:46:04
-+++ RetroVisor.xcodeproj/project.pbxproj	2026-05-11 12:09:46
+--- /tmp/_head_project.pbxproj
++++ RetroVisor.xcodeproj/project.pbxproj
 @@ -7,6 +7,7 @@
  	objects = {
  
@@ -8,15 +8,20 @@
  		50079E6E2E4331F5005BC5FD /* Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50079E6D2E4331F2005BC5FD /* Menu.swift */; };
  		50079E712E43813C005BC5FD /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50079E702E438139005BC5FD /* Extensions.swift */; };
  		5011EDEB2E6317DE00B0938A /* Sankara.metal in Sources */ = {isa = PBXBuildFile; fileRef = 5011EDEA2E6317D500B0938A /* Sankara.metal */; };
-@@ -48,6 +49,7 @@
+@@ -48,6 +49,12 @@
  		50BA96592E3C80F5006BA8DF /* TrackingWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50BA96582E3C80F2006BA8DF /* TrackingWindow.swift */; };
  		50BA965B2E3D4865006BA8DF /* Animated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50BA965A2E3D4861006BA8DF /* Animated.swift */; };
  		50BA965F2E3F6AA1006BA8DF /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 50BA965E2E3F6AA1006BA8DF /* Credits.rtf */; };
 +		50CA70112E5D6B81006BA8DF /* TileableLinearApertureGrille15Wide8And5d5Spacing.png in Resources */ = {isa = PBXBuildFile; fileRef = 50CA70102E5D6B81006BA8DF /* TileableLinearApertureGrille15Wide8And5d5Spacing.png */; };
++		06759E0844597BB7BA9F901C /* TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacing.png in Resources */ = {isa = PBXBuildFile; fileRef = B23DB91A68732BE2031108E0 /* TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacing.png */; };
++		D0C5AD6B05EDC08B9AC08D07 /* TileableLinearShadowMaskEDP.png in Resources */ = {isa = PBXBuildFile; fileRef = 82ABDE0AE04A95D1B65FAD9B /* TileableLinearShadowMaskEDP.png */; };
++		C03DDBF8751B7418F7C7062D /* TileableLinearApertureGrille15Wide8And5d5SpacingResizeTo64.png in Resources */ = {isa = PBXBuildFile; fileRef = 6E7E474151C6156487725D18 /* TileableLinearApertureGrille15Wide8And5d5SpacingResizeTo64.png */; };
++		0A6C0F2FA321FDF000511E44 /* TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacingResizeTo64.png in Resources */ = {isa = PBXBuildFile; fileRef = 45A70599BD771A7CB30C7439 /* TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacingResizeTo64.png */; };
++		0D62344517C2F14047EA7831 /* TileableLinearShadowMaskEDPResizeTo64.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D25B8CAD7611F7F82497050 /* TileableLinearShadowMaskEDPResizeTo64.png */; };
  		50BA96642E3FF0B3006BA8DF /* CrtEasy.metal in Sources */ = {isa = PBXBuildFile; fileRef = 50BA96632E3FF0B3006BA8DF /* CrtEasy.metal */; };
  		50BA966D2E40C3CB006BA8DF /* ShaderTableCellViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50BA966C2E40C3CB006BA8DF /* ShaderTableCellViews.swift */; };
  		50DE5B842E4CDB08002C07EC /* Loggable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50DE5B832E4CDB02002C07EC /* Loggable.swift */; };
-@@ -55,6 +57,7 @@
+@@ -55,6 +62,7 @@
  		50DE5B882E4E0666002C07EC /* IconBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50DE5B872E4E065D002C07EC /* IconBar.swift */; };
  		CB62DCB12F84C17100B1AEDC /* VHS.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB62DCB02F84C17100B1AEDC /* VHS.swift */; };
  		CB62DCB32F84C17D00B1AEDC /* VHS.metal in Sources */ = {isa = PBXBuildFile; fileRef = CB62DCB22F84C17D00B1AEDC /* VHS.metal */; };
@@ -24,15 +29,20 @@
  /* End PBXBuildFile section */
  
  /* Begin PBXFileReference section */
-@@ -103,6 +106,7 @@
+@@ -103,6 +111,12 @@
  		50BA96582E3C80F2006BA8DF /* TrackingWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingWindow.swift; sourceTree = "<group>"; };
  		50BA965A2E3D4861006BA8DF /* Animated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animated.swift; sourceTree = "<group>"; };
  		50BA965E2E3F6AA1006BA8DF /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 +		50CA70102E5D6B81006BA8DF /* TileableLinearApertureGrille15Wide8And5d5Spacing.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TileableLinearApertureGrille15Wide8And5d5Spacing.png; sourceTree = "<group>"; };
++		B23DB91A68732BE2031108E0 /* TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacing.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacing.png; sourceTree = "<group>"; };
++		82ABDE0AE04A95D1B65FAD9B /* TileableLinearShadowMaskEDP.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TileableLinearShadowMaskEDP.png; sourceTree = "<group>"; };
++		6E7E474151C6156487725D18 /* TileableLinearApertureGrille15Wide8And5d5SpacingResizeTo64.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TileableLinearApertureGrille15Wide8And5d5SpacingResizeTo64.png; sourceTree = "<group>"; };
++		45A70599BD771A7CB30C7439 /* TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacingResizeTo64.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacingResizeTo64.png; sourceTree = "<group>"; };
++		7D25B8CAD7611F7F82497050 /* TileableLinearShadowMaskEDPResizeTo64.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = TileableLinearShadowMaskEDPResizeTo64.png; sourceTree = "<group>"; };
  		50BA96632E3FF0B3006BA8DF /* CrtEasy.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = CrtEasy.metal; sourceTree = "<group>"; };
  		50BA966C2E40C3CB006BA8DF /* ShaderTableCellViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShaderTableCellViews.swift; sourceTree = "<group>"; };
  		50DE5B832E4CDB02002C07EC /* Loggable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loggable.swift; sourceTree = "<group>"; };
-@@ -110,6 +114,8 @@
+@@ -110,6 +124,8 @@
  		50DE5B872E4E065D002C07EC /* IconBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBar.swift; sourceTree = "<group>"; };
  		CB62DCB02F84C17100B1AEDC /* VHS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VHS.swift; sourceTree = "<group>"; };
  		CB62DCB22F84C17D00B1AEDC /* VHS.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = VHS.metal; sourceTree = "<group>"; };
@@ -41,7 +51,7 @@
  /* End PBXFileReference section */
  
  /* Begin PBXFrameworksBuildPhase section */
-@@ -179,6 +185,7 @@
+@@ -179,6 +195,7 @@
  				504F539F2E6173C300C5291F /* ColorSplitter.swift */,
  				5069364F2E4EFEFB0037984F /* CrtEasy.swift */,
  				CB62DCB02F84C17100B1AEDC /* VHS.swift */,
@@ -49,15 +59,20 @@
  				5011EDEC2E6317EC00B0938A /* Sankara.swift */,
  			);
  			path = Shaders;
-@@ -225,6 +232,7 @@
+@@ -225,6 +242,12 @@
  			isa = PBXGroup;
  			children = (
  				50BA965E2E3F6AA1006BA8DF /* Credits.rtf */,
 +				50CA70102E5D6B81006BA8DF /* TileableLinearApertureGrille15Wide8And5d5Spacing.png */,
++				B23DB91A68732BE2031108E0 /* TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacing.png */,
++				82ABDE0AE04A95D1B65FAD9B /* TileableLinearShadowMaskEDP.png */,
++				6E7E474151C6156487725D18 /* TileableLinearApertureGrille15Wide8And5d5SpacingResizeTo64.png */,
++				45A70599BD771A7CB30C7439 /* TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacingResizeTo64.png */,
++				7D25B8CAD7611F7F82497050 /* TileableLinearShadowMaskEDPResizeTo64.png */,
  			);
  			path = Resources;
  			sourceTree = "<group>";
-@@ -240,6 +248,7 @@
+@@ -240,6 +263,7 @@
  				504F53A12E6179AE00C5291F /* ColorSplitter.metal */,
  				50BA96632E3FF0B3006BA8DF /* CrtEasy.metal */,
  				CB62DCB22F84C17D00B1AEDC /* VHS.metal */,
@@ -65,15 +80,20 @@
  				5011EDEA2E6317D500B0938A /* Sankara.metal */,
  			);
  			path = GPU;
-@@ -309,6 +318,7 @@
+@@ -309,6 +333,12 @@
  				50BA96552E3C80D6006BA8DF /* Assets.xcassets in Resources */,
  				50BA965F2E3F6AA1006BA8DF /* Credits.rtf in Resources */,
  				50BA96562E3C80D6006BA8DF /* Main.storyboard in Resources */,
 +				50CA70112E5D6B81006BA8DF /* TileableLinearApertureGrille15Wide8And5d5Spacing.png in Resources */,
++				06759E0844597BB7BA9F901C /* TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacing.png in Resources */,
++				D0C5AD6B05EDC08B9AC08D07 /* TileableLinearShadowMaskEDP.png in Resources */,
++				C03DDBF8751B7418F7C7062D /* TileableLinearApertureGrille15Wide8And5d5SpacingResizeTo64.png in Resources */,
++				0A6C0F2FA321FDF000511E44 /* TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacingResizeTo64.png in Resources */,
++				0D62344517C2F14047EA7831 /* TileableLinearShadowMaskEDPResizeTo64.png in Resources */,
  			);
  			runOnlyForDeploymentPostprocessing = 0;
  		};
-@@ -325,6 +335,7 @@
+@@ -325,6 +355,7 @@
  				50BA964F2E3C80D6006BA8DF /* AppDelegate.swift in Sources */,
  				503FCC2B2E48F2E500EF49DA /* RecorderPreferencesViewController.swift in Sources */,
  				506936502E4EFF160037984F /* CrtEasy.swift in Sources */,
@@ -81,7 +101,7 @@
  				50292D962E471AAA0084CFE3 /* PermissionViewController.swift in Sources */,
  				503FCC2D2E48F5A300EF49DA /* Recorder.swift in Sources */,
  				50BA96592E3C80F5006BA8DF /* TrackingWindow.swift in Sources */,
-@@ -338,6 +349,7 @@
+@@ -338,6 +369,7 @@
  				509E84C32E57584400384C75 /* ImageToolbox.swift in Sources */,
  				50BA96512E3C80D6006BA8DF /* ViewController.swift in Sources */,
  				50BA96642E3FF0B3006BA8DF /* CrtEasy.metal in Sources */,
@@ -89,7 +109,7 @@
  				503FCC212E48688600EF49DA /* SidebarViewController.swift in Sources */,
  				50079E6E2E4331F5005BC5FD /* Menu.swift in Sources */,
  				50BA965B2E3D4865006BA8DF /* Animated.swift in Sources */,
-@@ -515,7 +527,7 @@
+@@ -515,7 +547,7 @@
  				COMBINE_HIDPI_IMAGES = YES;
  				CURRENT_PROJECT_VERSION = 250916.5;
  				DEAD_CODE_STRIPPING = YES;
@@ -98,7 +118,7 @@
  				ENABLE_APP_SANDBOX = YES;
  				ENABLE_HARDENED_RUNTIME = YES;
  				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
-@@ -549,7 +561,7 @@
+@@ -549,7 +581,7 @@
  				COMBINE_HIDPI_IMAGES = YES;
  				CURRENT_PROJECT_VERSION = 250916.5;
  				DEAD_CODE_STRIPPING = YES;

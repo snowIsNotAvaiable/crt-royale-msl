@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Erzeugt Zusatz-Abbildungen + GIFs für Bericht und Webpage:
 
-  fig-mask-types.png     -- Zoom-Vergleich Grille / Slot / Shadow
-  fig-curvature.png      -- Flat vs. Curvature+AA (Demo-Modus)
-  fig-pipeline-strip.png -- Filmstreifen aller 13 Pipeline-Stages
-  pipeline-stages.gif    -- animierte Stage-Abfolge (Webpage)
-  mask-types.gif         -- animierter Mask-Typ-Wechsel (Webpage)
+  fig-mask-types.png:     Zoom-Vergleich Grille / Slot / Shadow
+  fig-curvature.png:      Flat vs. Curvature+AA (Demo-Modus)
+  fig-pipeline-strip.png: Filmstreifen aller 13 Pipeline-Stages
+  pipeline-stages.gif:    animierte Stage-Abfolge (Webpage)
+  mask-types.gif:         animierter Mask-Typ-Wechsel (Webpage)
 
 Aufruf:  python3 tools/make_extra_figures.py [SCRATCH_DIR]
 SCRATCH_DIR muss out-slot/, out-shadow/, out-demo/ aus SwiftRunner-Läufen

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# compare_all.sh -- Run tools/compare.py over every (pattern, pass) tuple
+# compare_all.sh: Run tools/compare.py over every (pattern, pass) tuple
 # against the librashader reference snapshots and print a summary table.
 #
 # Layout assumed:
@@ -83,7 +83,7 @@ done
 
 if (( compare_failures > 0 )); then
   echo
-  echo "WARNUNG: $compare_failures compare.py-Aufrufe fehlgeschlagen -- Tabelle unvollstaendig." >&2
+  echo "WARNUNG: $compare_failures compare.py-Aufrufe fehlgeschlagen, Tabelle unvollstaendig." >&2
   echo "         Dependencies installieren:  python3 -m venv .venv && .venv/bin/pip install -r requirements.txt" >&2
   exit 1
 fi

@@ -2,7 +2,7 @@
 """Setup the CRT-Royale integration into vendor/RetroVisor on a fresh clone.
 
 Cross-platform: works on macOS, Linux, and Windows (Windows requires Developer
-Mode enabled for symlink creation -- alternatively this script falls back to
+Mode enabled for symlink creation; alternatively this script falls back to
 file copies on Windows if symlinks fail).
 
 What it does:
@@ -52,11 +52,11 @@ VENDOR = ROOT / "vendor" / "RetroVisor"
 #
 # Mask-LUT note: CrtRoyale.swift loads six LUTs by name from the app bundle,
 # three large (mask_type 0/1/2, hardware-resample path) and three 64x64 ones
-# (the mask_sample_mode=0 path). All six are linked here. Only the aperture
-# grille is currently registered in the Xcode Resources build phase via
-# build-patches/01-project.pbxproj.patch, so slot/shadow fall back to grille
-# in the app until that phase lists them too. The headless SwiftRunner is
-# unaffected: it takes --mask-lut / --mask-lut-small as explicit paths.
+# (the mask_sample_mode=0 path). All six are linked here and registered in the
+# Xcode Resources build phase by build-patches/01-project.pbxproj.patch, so the
+# Mask Type picker can switch between grille, slot and shadow mask. The
+# headless SwiftRunner does not use the bundle: it takes --mask-lut and
+# --mask-lut-small as explicit paths.
 _MASK_LUTS = [
     "TileableLinearApertureGrille15Wide8And5d5Spacing.png",
     "TileableLinearSlotMaskTall15Wide9And4d5Horizontal9d14VerticalSpacing.png",

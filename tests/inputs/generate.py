@@ -2,13 +2,13 @@
 """Generate deterministic test inputs for the CRT-Royale validation pipeline.
 
 Each pattern stresses a different shader behavior:
-    colorbars.png  -- gamma & per-channel correctness
-    grid.png       -- scanline alignment, geometry stability
-    gradient.png   -- gamma curve smoothness, banding
-    solid_white    -- max-brightness clipping, autodim correctness
-    solid_black    -- darks must stay dark (no NaN/sign flip)
-    solid_gray     -- mid-luminance round-trip sanity
-    horiz_lines    -- per-line response (Pass 2 should keep these intact)
+    colorbars.png:  gamma & per-channel correctness
+    grid.png:       scanline alignment, geometry stability
+    gradient.png:   gamma curve smoothness, banding
+    solid_white:    max-brightness clipping, autodim correctness
+    solid_black:    darks must stay dark (no NaN/sign flip)
+    solid_gray:     mid-luminance round-trip sanity
+    horiz_lines:    per-line response (Pass 2 should keep these intact)
 
 Outputs are 256x192 PNGs (NES-like resolution) written next to this script.
 """

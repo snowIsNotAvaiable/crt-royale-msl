@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------------
-// SwiftRunner -- headless validation harness for the CRT-Royale MSL port.
+// SwiftRunner: headless validation harness for the CRT-Royale MSL port.
 //
 // Loads a PNG, runtime-compiles vendor/RetroVisor/RetroVisor/GPU/CrtRoyale.metal,
 // runs the full pipeline (Pass 1 -> Pass 2 -> Final Encode) and dumps a PNG
@@ -46,7 +46,7 @@ struct Uniforms {
     // Halation / Diffusion (slang passes 3+4 + apply-mask + bloom-final)
     var halation_weight: Float
     var diffusion_weight: Float
-    // Pass 4 (slang pass 11) -- geometry + border + final encode
+    // Pass 4 (slang pass 11): geometry + border + final encode
     var geom_mode: UInt32
     var geom_radius_factor: Float
     var border_size: Float
@@ -90,10 +90,15 @@ struct Args {
     var inputPath: String
     var outDir: String
     var scale: Int        // Y-upscale factor: how much taller is output vs source.
+    var scanlineDistance: Int // Output pixels per scanline for the virtual source
+                              // pre-pass (pass0_virtual_source). 1 = off. With
+                              // N > 1 the input is box-averaged down to
+                              // (input height * scale) / N rows first, the way
+                              // the RetroVisor app prepares its screen capture.
     var neutralGamma: Bool // When true, crt_gamma == lcd_gamma => round-trip identity.
-    var maskLutPath: String? // Large LUT (512x512, mipmapped) -- consumed by
+    var maskLutPath: String? // Large LUT (512x512, mipmapped), consumed by
                              // pass3 when mask_sample_mode=1.
-    var maskLutSmallPath: String? // Small LUT (64x64, no mipmap) -- consumed
+    var maskLutSmallPath: String? // Small LUT (64x64, no mipmap), consumed
                              // by pass 5 (mask_resize_v) at slang-default
                              // settings. Required when mask_sample_mode=0.
     var maskType: UInt32     // 0 = aperture grille, 1 = slot mask, 2 = shadow mask.
@@ -120,6 +125,7 @@ let maskAmplifyByType: [UInt32: Float] = [
 func parseArgs() -> Args {
     var metal: String?, input: String?, out: String?, lut: String?, lutSmall: String?
     var scale = 4
+    var scanlineDistance = 1
     var neutral = false
     var demo = false
     var bench = 0
@@ -131,6 +137,7 @@ func parseArgs() -> Args {
         case "--input":     input = it.next()
         case "--outdir":    out = it.next()
         case "--scale":     scale = Int(it.next() ?? "4") ?? 4
+        case "--scanline-distance": scanlineDistance = max(1, Int(it.next() ?? "1") ?? 1)
         case "--neutral":   neutral = true
         case "--bench":     bench = Int(it.next() ?? "100") ?? 100
         case "--mask-lut":  lut = it.next()
@@ -152,11 +159,12 @@ func parseArgs() -> Args {
     }
     guard let m = metal, let i = input, let o = out else {
         FileHandle.standardError.write(Data(
-            "usage: SwiftRunner --metal X --input Y --outdir Z [--scale N] [--neutral] [--mask-lut PATH] [--mask-lut-small PATH] [--mask-type grille|slot|shadow] [--demo]\n".utf8))
+            "usage: SwiftRunner --metal X --input Y --outdir Z [--scale N] [--scanline-distance N] [--neutral] [--mask-lut PATH] [--mask-lut-small PATH] [--mask-type grille|slot|shadow] [--demo]\n".utf8))
         exit(2)
     }
     return Args(metalPath: m, inputPath: i, outDir: o,
-                scale: scale, neutralGamma: neutral, maskLutPath: lut,
+                scale: scale, scanlineDistance: scanlineDistance,
+                neutralGamma: neutral, maskLutPath: lut,
                 maskLutSmallPath: lutSmall,
                 maskType: maskType, demoMode: demo,
                 benchIterations: bench)
@@ -374,6 +382,7 @@ try? FileManager.default.createDirectory(atPath: args.outDir,
 
 let device = makeDevice()
 let library = compileLibrary(device: device, metalPath: args.metalPath)
+let virtualK  = makeKernel(library: library, device: device, name: "crt_royale::pass0_virtual_source")
 let pass1     = makeKernel(library: library, device: device, name: "crt_royale::pass1_linearize")
 let pass2     = makeKernel(library: library, device: device, name: "crt_royale::pass2_vertical_scanlines")
 let pass3     = makeKernel(library: library, device: device, name: "crt_royale::pass3_apply_mask")
@@ -392,16 +401,38 @@ let sampler       = makeSampler(device: device)
 let repeatSampler = makeRepeatSampler(device: device)
 let queue         = device.makeCommandQueue()!
 
-let input = loadPNGAsTexture(device: device, path: args.inputPath)
+let captured = loadPNGAsTexture(device: device, path: args.inputPath)
+let outH = captured.height * args.scale   // Y-upscale to mimic real CRT/LCD pixel pitch.
+
+// Optional virtual source (see pass0_virtual_source): reduce the captured image
+// to outH / scanline_distance rows before the pipeline sees it. Skipped when it
+// would not actually reduce anything, mirroring CrtRoyale.prepareSource().
+let virtualRows = Int((Float(outH) / Float(args.scanlineDistance)).rounded())
+let useVirtualSource = args.scanlineDistance > 1 && virtualRows >= 8
+                       && virtualRows < captured.height
+let input: MTLTexture
+if useVirtualSource {
+    let reduced = makeTexture(device: device, width: captured.width,
+                              height: virtualRows, pixelFormat: captured.pixelFormat)
+    var preUniforms = Uniforms.defaults
+    let preCmd = queue.makeCommandBuffer()!
+    runKernel(commandBuffer: preCmd, pipeline: virtualK, sampler: sampler,
+              source: captured, target: reduced, uniforms: &preUniforms)
+    preCmd.commit()
+    preCmd.waitUntilCompleted()
+    input = reduced
+    print("[runner] virtual source: \(captured.width)x\(captured.height) -> \(captured.width)x\(virtualRows)  (scanline distance \(args.scanlineDistance) px)")
+} else {
+    input = captured
+}
 let w = input.width
 let h = input.height
-let outH = h * args.scale          // Y-upscale to mimic real CRT/LCD pixel pitch.
 
 // Optional phosphor-mask LUT (mask_grille_texture_large from the slang
 // shaders repo). When provided, pass3 samples it at a slang-equivalent tiled
 // UV and ignores the procedural aperture grille. The PNG bytes are already
 // linear ("TileableLinear*.png"); we load them into a non-sRGB texture so
-// they reach the sampler verbatim. Mipmaps are essential -- the slang preset
+// they reach the sampler verbatim. Mipmaps are essential: the slang preset
 // sets mask_grille_texture_large_mipmap=true, and at our triad sizes the
 // sampler's LOD selection lives at mip levels 4-5, smoothing the subpixel
 // structure (without mipmaps we'd get aliased sharp triads).
@@ -430,7 +461,7 @@ print("[runner] input: \(args.inputPath) (\(w)x\(h))  scale=\(args.scale)x  neut
 print("[runner] Uniforms.stride = \(MemoryLayout<Uniforms>.stride)")
 
 // Pass 1 keeps source resolution (matches scale_type=source in the slang
-// preset). Pass 2 writes into the Y-upscaled output FBO -- this is what
+// preset). Pass 2 writes into the Y-upscaled output FBO; this is what
 // produces visible scanlines (pixel_height = video.y / output.y < 1).
 // Pass 3 stays at the same upscaled resolution as Pass 2.
 let linearized        = makeTexture(device: device, width: w, height: h,    pixelFormat: .rgba16Float)
@@ -489,7 +520,7 @@ if args.demoMode {
 // Core pipeline as a closure so we can run it multiple times for benchmarks.
 // Each call records all 12 CRT-Royale passes + pass4_geometry_aa into a fresh
 // command buffer, commits + waits, returns GPU-time in milliseconds. The
-// per-pass linearExp dumps used for snapshot export are excluded here -- bench
+// per-pass linearExp dumps used for snapshot export are excluded here; bench
 // measures the actual user-facing pipeline cost only.
 func runCorePipeline() -> Double {
     let cmd = queue.makeCommandBuffer()!
@@ -505,7 +536,7 @@ func runCorePipeline() -> Double {
     // Pass 4 (HALATION_BLUR)
     runKernel(commandBuffer: cmd, pipeline: halHK, sampler: sampler,
               source: halationV, target: halationBlur, uniforms: &uniforms)
-    // Pass 5 + 6 (MASK_RESIZE V/H) -- only if small LUT bound
+    // Pass 5 + 6 (MASK_RESIZE V/H): only if small LUT bound
     if let lutSmall = maskLutSmall {
         runKernel(commandBuffer: cmd, pipeline: mrVK, sampler: repeatSampler,
                   source: lutSmall, target: maskResizeV, uniforms: &uniforms)
@@ -551,7 +582,7 @@ func runCorePipeline() -> Double {
 // Benchmark mode: run N times, print stats, then proceed to snapshot output.
 if args.benchIterations > 0 {
     let N = args.benchIterations
-    // Warmup -- excluded from stats. Compiles kernels, primes caches.
+    // Warmup: excluded from stats. Compiles kernels, primes caches.
     for _ in 0..<3 { _ = runCorePipeline() }
     var samples: [Double] = []
     samples.reserveCapacity(N)
@@ -562,7 +593,7 @@ if args.benchIterations > 0 {
     let p95 = samples[min(N - 1, Int(Double(N) * 0.95))]
     let mn = samples.first!
     let mx = samples.last!
-    print("[bench] frames=\(N) at \(w)x\(outH) -- " +
+    print("[bench] frames=\(N) at \(w)x\(outH): " +
           "mean=\(String(format: "%.3f", mean)) ms, " +
           "p50=\(String(format: "%.3f", p50)) ms, " +
           "p95=\(String(format: "%.3f", p95)) ms, " +
@@ -623,7 +654,7 @@ runKernel(commandBuffer: cmd, pipeline: pass3, sampler: sampler,
 
 // BRIGHTPASS (slang pass 8): area-based brightness extraction. Reads
 // MASKED_SCANLINES (texture 0) and BLOOM_APPROX (texture 2). Output is the
-// "bloom source" -- the fraction of MASKED_SCANLINES that should bloom into
+// "bloom source": the fraction of MASKED_SCANLINES that should bloom into
 // neighbors.
 runKernel(commandBuffer: cmd, pipeline: brightpsK, sampler: sampler,
           source: maskedScanlines, target: brightpass, uniforms: &uniforms,
@@ -636,14 +667,14 @@ runKernel(commandBuffer: cmd, pipeline: bloomVK, sampler: sampler,
 // BLOOM_H_RECONSTITUTE (slang pass 10): horizontal blur of bloomV + add
 // dimpass back. Output is BLOOM_FINAL, the input to slang pass 11.
 // Inputs: bloomV (tex 0), brightpass (tex 2), masked_scanlines (tex 3),
-// halation_blur (tex 4) -- the last one feeds the diffusion_weight mix.
+// halation_blur (tex 4); the last one feeds the diffusion_weight mix.
 runKernel(commandBuffer: cmd, pipeline: bloomHK, sampler: sampler,
           source: bloomV, target: bloomFinal, uniforms: &uniforms,
           extraTextures: [(brightpass, 2), (maskedScanlines, 3),
                           (halationBlur, 4)])
 
 // Per-pass snapshots are written as raw linear values (no gamma encoding)
-// to match librashader's per-pass output format -- it exports the linear
+// to match librashader's per-pass output format; it exports the linear
 // floats stored in sRGB framebuffers as PNG bytes, not the sRGB-encoded
 // bytes. Apples-to-apples comparison requires the same convention.
 runKernel(commandBuffer: cmd, pipeline: linearExp, sampler: sampler,

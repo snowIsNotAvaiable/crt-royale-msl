@@ -219,7 +219,7 @@ def analyze_pattern(name: str, dir: Path, rep: Report, mode: str) -> None:
     else:
         # The aperture-grille mask quintessentially adds X-direction subpixel
         # structure. Skip the energy-delta test when the input already had
-        # heavy X-variation (color bars, anything channel-checkered) -- the
+        # heavy X-variation (color bars, anything channel-checkered); the
         # mask multiplies into that variation rather than dominating it.
         # The "RGB triad pattern is consistent" check below is the stronger
         # invariant and runs unconditionally on near-solid inputs.

@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------------
-// CRT-Royale MSL Port -- HALATION_V + HALATION_BLUR (slang passes 3 + 4).
+// CRT-Royale MSL Port: HALATION_V + HALATION_BLUR (slang passes 3 + 4).
 //
 // Original: crt-royale by TroggleMonkey (GPL v2+).
 // Ported to Metal Shading Language for RetroVisor integration.
@@ -18,18 +18,16 @@
 // scale=1.0 in the .slangp preset -> fixed 320 x 240.
 //
 // Consumers of HALATION_BLUR:
-//   - apply-mask (slang pass 7): halation_weight lerp (default 0.0 -- no
+//   - apply-mask (slang pass 7): halation_weight lerp (default 0.0, no
 //     visible effect at slang defaults, but the runtime parameter is exposed).
 //   - bloom-h-reconstitute (slang pass 10): diffusion_weight lerp (default
-//     0.075 -- ~7.5% halation always mixed into the final phosphor bloom).
-//     This non-zero default was missed in earlier MSL iterations; the
-//     correction is part of this iteration.
+//     0.075, ~7.5% halation always mixed into the final phosphor bloom).
 //
 // Why 9-tap separable + bilinear-trick + blur9_std_dev:
 //   - The slang blur uses tex2Dblur9fast (5 bilinear samples per pass, 9-tap
 //     equivalent). Sigma = blur9_std_dev = 1.7533203125 from blur-functions.h
 //     (USE_BINOMIAL_BLUR_STD_DEVS undefined -> "largest unused tail < 1/256"
-//     branch). We share the same `tex2Dblur9fast` helper as bloom V/H -- it
+//     branch). We share the same `tex2Dblur9fast` helper as bloom V/H; it
 //     lives in CrtRoyale.metal, signature unchanged.
 //
 // dxdy in slang:

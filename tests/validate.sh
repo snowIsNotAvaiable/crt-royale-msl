@@ -2,8 +2,8 @@
 # CRT-Royale MSL validation pipeline.
 #   1. (re)generates the deterministic test inputs
 #   2. builds the headless Swift runner
-#   3. runs it twice per input -- neutral gamma (round-trip identity) +
-#      default gamma (gamma simulation visible) -- with 4x Y-upscale so
+#   3. runs it twice per input: neutral gamma (round-trip identity) +
+#      default gamma (gamma simulation visible), with 4x Y-upscale so
 #      pass-2 scanline structure is actually visible
 #   4. runs the Python analyzer against both result trees
 #

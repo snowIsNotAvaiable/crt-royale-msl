@@ -10,7 +10,7 @@
 //   neighbour) and weight each with a generalized-Gaussian beam profile whose
 //   width (sigma) and shape (beta) vary with the source scanline brightness.
 //   The result is the integrated light arriving at the pixel from all visible
-//   scanlines -- the characteristic CRT scanline look.
+//   scanlines, the characteristic CRT scanline look.
 //
 // Input:  Linear-light texture from Pass 1 (already gamma-linearized).
 //         IMPORTANT: do NOT re-apply crt_gamma here. The reference shader's
@@ -40,7 +40,7 @@ using namespace metal;
 
 namespace crt_royale {
 
-    // The full Uniforms struct lives in CrtRoyale.metal -- declared here as a
+    // The full Uniforms struct lives in CrtRoyale.metal, declared here as a
     // study stub so this file documents the pass's contract.
     //
     // struct Uniforms {

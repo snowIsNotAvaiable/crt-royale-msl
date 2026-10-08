@@ -8,10 +8,10 @@
 // Slang pass index: 8
 //
 // Inputs (texture indices):
-//   0  MASKED_SCANLINES  -- our pass 3 output (slang's pass 7 alias)
-//   2  BLOOM_APPROX      -- our pass_bloom_approx output (slang's pass 2)
+//   0  MASKED_SCANLINES:  our pass 3 output (slang's pass 7 alias)
+//   2  BLOOM_APPROX:      our pass_bloom_approx output (slang's pass 2)
 // Output:
-//   1  BRIGHTPASS        -- consumed by bloom V/H (slang passes 9, 10)
+//   1  BRIGHTPASS:        consumed by bloom V/H (slang passes 9, 10)
 //
 // What this pass does:
 //   For each pixel we compute "how much extra blur energy will arrive from
@@ -27,7 +27,7 @@
 //   - bloom_sigma + center_weight computed from `mask_triad_size` uniform
 //     (matches slang's `mask_triad_size_desired_static` default 3.0).
 //   - Default 9-tap blur center weight only. PHOSPHOR_BLOOM_TRIADS_LARGER_*
-//     branches not implemented (TODO when needed).
+//     branches not ported.
 //   - levels_contrast = 1.0 (slang default).
 //   - bloom_underestimate_levels = 0.8 (slang default, hardcoded).
 //   - bloom_excess = 0 (slang default, hardcoded).

@@ -3,7 +3,7 @@
 Portierung des [CRT-Royale](https://github.com/libretro/slang-shaders/tree/master/crt/shaders/crt-royale)-Shaders (ursprünglich Slang/GLSL von TroggleMonkey, GPL v2+) nach Apple Metal Shading Language (MSL), integriert in die macOS-App [RetroVisor](https://github.com/dirkwhoffmann/RetroVisor) von Prof. Dr. Dirk W. Hoffmann.
 
 **Master-Semesterprojekt, HKA.**<br>
-Devin Uyan - 1. Semester Master Informatik.
+Devin Uyan, 1. Semester Master Informatik.
 
 ## Stand der Pipeline
 
@@ -29,9 +29,9 @@ Dieses Repository (`crt-royale-msl`) liegt erwartungsgemäß **neben** zwei exte
 some-workspace/
 ├── crt-royale-msl/         ← dieses Repository
 │   ├── integration/        # Source-of-Truth für die RetroVisor-Integration
-│   │   ├── CrtRoyale.metal       # die produktive MSL-Pipeline (~1570 Zeilen)
+│   │   ├── CrtRoyale.metal       # die produktive MSL-Pipeline (~1610 Zeilen)
 │   │   ├── CrtRoyale.swift       # Swift-Integration (Settings, Kernel, Pipeline)
-│   │   ├── textures/             # Phosphor-Mask-LUTs
+│   │   ├── textures/             # die sechs Phosphor-Mask-LUTs (Grille, Slot, Shadow)
 │   │   ├── build-patches/        # Patches für die im Vendor-Repo getrackten Dateien
 │   │   ├── setup.py              # Plattformübergreifendes Setup (macOS/Linux/Windows)
 │   │   ├── setup.sh              # Bash-Wrapper
@@ -46,14 +46,15 @@ some-workspace/
 │   │   ├── SwiftRunner/          # Headless-Validierungs-Harness (Swift-Package)
 │   │   ├── validate.sh           # Haupteinstiegspunkt für Tests
 │   │   ├── capture_reference.sh  # Referenz-Snapshots neu erzeugen
+│   │   ├── capture_mask_variants.sh # colorbars je Maskentyp rendern (Grille/Slot/Shadow)
 │   │   └── compare_all.sh        # Batch-Vergleich Outputs vs. Referenz
 │   ├── tools/
 │   │   ├── compare.py            # ΔE2000 + SSIM + Heatmap
 │   │   ├── analyze.py            # Sanity-Checks für SwiftRunner-Outputs
 │   │   ├── make_figures.py       # Berichts-Abbildungen (Charts) aus den Test-Artefakten
 │   │   └── make_extra_figures.py # Mask-Typ-/Curvature-Vergleiche, Pipeline-Strip, GIFs
-│   ├── textures/                 # Arbeitskopien der Mask-LUTs
-│   └── docs/                     # NICHT versioniert, privat (Bericht, Status etc.)
+│   ├── requirements.txt          # gepinnte Python-Abhängigkeiten
+│   └── docs/                     # nicht Teil des Repositories (Projektbericht)
 ├── vendor/
 │   ├── RetroVisor/         ← `git clone git@github.com:dirkwhoffmann/RetroVisor.git`
 │   └── slang-shaders/      ← `git clone git@github.com:libretro/slang-shaders.git`
@@ -118,6 +119,14 @@ open RetroVisor.xcodeproj
 
 In der laufenden App: Shader-Picker → **CRT-Royale**.
 
+Das Xcode-Projekt wird durch das Setup auf das Signing-Team des Autors gepatcht. Mit einem anderen Team dieses in Xcode unter *Signing & Capabilities* wählen (Details in [`integration/README.md`](integration/README.md#signing)).
+
+### Scanlines in der App
+
+CRT-Royale definiert eine Scanline als **eine Zeile des Quellbildes**. Ein Emulator liefert 240 oder 480 Zeilen, die auf einem deutlich höheren Bildschirm auf etwa 4 bis 8 Ausgabezeilen gestreckt werden; zwischen zwei Zeilen kann das Strahlprofil abfallen. RetroVisor nimmt den Bildschirm dagegen in nativer Auflösung auf: Quell- und Ausgabehöhe sind gleich, jede Quellzeile ist genau eine Ausgabezeile, und es entstehen keine dunklen Zwischenräume. Sichtbar bleibt dann nur die senkrechte Phosphorstruktur der Maske.
+
+Der Regler **Beam → Scanline Distance (px)** stellt das Verhältnis wieder her: Die Aufnahme wird vertikal auf `Ausgabehöhe / Abstand` Zeilen gemittelt (`pass0_virtual_source`), bevor Pass 1 sie sieht. Standard ist 4, der Wert 1 schaltet die Vorstufe aus. Der Zeilenabstand ist damit relativ zur Fenstergröße zu verstehen: Ein höheres Fenster ergibt mehr virtuelle Zeilen.
+
 ## Headless-Validierung
 
 ```bash
@@ -129,6 +138,8 @@ Was passiert:
 2. Der Swift-Runner wird gebaut.
 3. Die gesamte Pipeline läuft für jedes Input-PNG durch (12 Slang-Passes + Geometry-AA).
 4. Der Output wird gegen die librashader-Referenz-Snapshots in `tests/reference/` verglichen.
+
+Der Runner arbeitet wie die App mit einer Quelle, die kleiner ist als die Ausgabe (`--scale N` streckt die Ausgabe vertikal). Mit `--scanline-distance N` schaltet er zusätzlich die virtuelle Vorstufe der App vor, etwa um ein hochaufgelöstes Bild wie eine Bildschirmaufnahme durch die Pipeline zu schicken.
 
 <br>Erwartetes Resultat: **75 / 75 Sanity-Checks grün**; <br>ΔE-Tabelle gegen Slang-Referenz mit `04-final` Mean ΔE ≤ 5.04.
 
@@ -160,17 +171,18 @@ Erwartete Ausgabe auf Apple M2: `p50 ≈ 0.95 ms` (~1050 FPS) bei 256×768.
 
 Die Validierung läuft in zwei Stufen:
 
-1. **Sanity-Checks** (`tools/analyze.py`) - strukturelle Checks am SwiftRunner-Output: <br>Round-Trip-Identität von Pass 1 bei `--neutral`, Korrektheit des Y-Upscalings, <br>Wertebereichs-Prüfungen, Konsistenz der RGB-Triade auf Solid-Inputs.
+1. **Sanity-Checks** (`tools/analyze.py`): strukturelle Checks am SwiftRunner-Output: <br>Round-Trip-Identität von Pass 1 bei `--neutral`, Korrektheit des Y-Upscalings, <br>Wertebereichs-Prüfungen, Konsistenz der RGB-Triade auf Solid-Inputs.
 
-2. **ΔE2000 + SSIM gegen Slang-Referenz** (`tools/compare.py`) - <br>pixelgenauer Vergleich gegen librashader-cli-Output. <br>Akzeptanzkriterium für portierte Stages: `mean ΔE2000 < 2.0`.
+2. **ΔE2000 + SSIM gegen Slang-Referenz** (`tools/compare.py`): <br>pixelgenauer Vergleich gegen librashader-cli-Output. <br>Akzeptanzkriterium für portierte Stages: `mean ΔE2000 < 2.0`.
 
 <br>Beide Werkzeuge werden in `validate.sh` orchestriert. Die SwiftRunner-Pipeline produziert pro Test-Input 13 Snapshots (`00-input` … `04-final`, dazu alle Zwischenstufen `02b-bloom_approx`, `02c-halation_v`, `02d-halation_blur`, `02e-mask_resize_v`, `02f-mask_resize`, `03-pass3`, `03b-brightpass`, `03c-bloom_v`, `03d-bloom_final`), so dass jeder Slang-Pass isoliert vergleichbar ist.
 
 ## Bekannte Einschränkungen
 
-- **Mask-Resize Mode 0** (Lanczos-resized Mask-LUT) ist implementiert, aber die `mask_resize_tile_size`-Konstantenkette in librashader weicht von meiner Hand-Trace ab - <br>die Default-Pipeline läuft im Mode-1-Pfad (Hardware-Resample, ΔE-validiert).
+- **Mask-Resize Mode 0** (Lanczos-resized Mask-LUT) ist implementiert, aber die `mask_resize_tile_size`-Konstantenkette in librashader weicht von der Hand-Trace ab; <br>die Default-Pipeline läuft im Mode-1-Pfad (Hardware-Resample, ΔE-validiert).
 
 - **Curvature-Branch** in Pass 11 ist nicht ΔE-validiert (benötigt eigene Referenz-Snapshots).
+- **Scanline Distance** (nur App) hat kein Gegenstück im Slang-Preset und lässt sich deshalb nicht gegen die Referenz messen. Der Kernel ist gegen eine unabhängige Zeilenmittelung geprüft (mittlere Abweichung 0,006 von 255); die nachgelagerte Pipeline läuft unverändert im validierten Bereich.
 - **Geometrie-Modi 2 und 3** (Sphere_Alt, Cylinder) sind nicht portiert. <br>Sphere (Mode 1) deckt den üblichen Curved-CRT-Fall ab.
 - **AA-Filter-Konfigurierbarkeit**: Catmull-Rom-Cubic ist fixiert <br>(Slang exponiert eine 10×11-Matrix aus Filtertypen und Sample-Counts). <br>Visuell äquivalent für die Moire-Suppression.
 

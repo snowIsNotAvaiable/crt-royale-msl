@@ -28,8 +28,9 @@
 //   - bloom_sigma computed from u.mask_triad_size via
 //     get_min_sigma_to_blur_triad (slang's get_final_bloom_sigma in the
 //     no-RUNTIME_PHOSPHOR_BLOOM_SIGMA static path).
-//   - 9-tap blur only; PHOSPHOR_BLOOM_TRIADS_LARGER_*_PIXELS branches that
-//     pick 17/25/31/43-tap are TODO for very large triad sizes.
+//   - 9-tap blur only; the PHOSPHOR_BLOOM_TRIADS_LARGER_*_PIXELS branches
+//     that pick 17/25/31/43-tap are not ported (only relevant for very large
+//     triad sizes).
 //   - levels_contrast = 1.0 (slang default, not exposed).
 //   - diffusion_weight = 0 -> HALATION_BLUR mixing skipped.
 //

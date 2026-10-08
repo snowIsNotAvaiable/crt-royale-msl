@@ -1,28 +1,28 @@
 // -----------------------------------------------------------------------------
-// CRT-Royale MSL Port -- Compute Kernels (full 12-pass pipeline)
+// CRT-Royale MSL Port: Compute Kernels (full 12-pass pipeline)
 //
 // Original: crt-royale by TroggleMonkey (GPL v2+)
 // Ported to Metal Shading Language for RetroVisor integration.
 //
 // Kernels, in dispatch order (slang pass number in brackets):
-//   pass1_linearize            -- [0]     linearize CRT gamma + bob fields
-//   pass2_vertical_scanlines   -- [1]     beam distribution / scanlines
-//   pass_bloom_approx          -- [2]     4x4 gaussian resize to 320x240
-//   pass_halation_v / _h       -- [3, 4]  9-tap separable halation blur
-//   pass_mask_resize_v / _h    -- [5, 6]  lanczos-sinc resize of the mask LUT
-//   pass3_apply_mask           -- [7]     beam x phosphor mask + halation mix
-//   pass_brightpass            -- [8]     area-based bloom extraction
-//   pass_bloom_v               -- [9]     vertical bloom blur
-//   pass_bloom_h_reconstitute  -- [10]    horizontal bloom + reconstitute
-//   pass4_geometry_aa          -- [11]    geometry + AA + border + encode
-//   pass_final_encode          -- helper: encodes whichever intermediate the
+//   pass1_linearize:            [0]     linearize CRT gamma + bob fields
+//   pass2_vertical_scanlines:   [1]     beam distribution / scanlines
+//   pass_bloom_approx:          [2]     4x4 gaussian resize to 320x240
+//   pass_halation_v / _h:       [3, 4]  9-tap separable halation blur
+//   pass_mask_resize_v / _h:    [5, 6]  lanczos-sinc resize of the mask LUT
+//   pass3_apply_mask:           [7]     beam x phosphor mask + halation mix
+//   pass_brightpass:            [8]     area-based bloom extraction
+//   pass_bloom_v:               [9]     vertical bloom blur
+//   pass_bloom_h_reconstitute:  [10]    horizontal bloom + reconstitute
+//   pass4_geometry_aa:          [11]    geometry + AA + border + encode
+//   pass_final_encode:          helper: encodes whichever intermediate the
 //                                 host bound, used by the debug picker and by
 //                                 the headless runner's snapshot export
 //
 // Pipeline contract (same throughout the port):
 //   Pass 1 linearizes once. ALL subsequent intermediate textures are
 //   linear-light. The reference shader's tex2D_linearize() therefore becomes
-//   a plain texture sample in our port -- do NOT re-apply crt_gamma in pass 2
+//   a plain texture sample in our port; do NOT re-apply crt_gamma in pass 2
 //   or anywhere downstream. Only pass_final_encode performs the inverse
 //   gamma encoding for display.
 // -----------------------------------------------------------------------------
@@ -158,7 +158,7 @@ namespace crt_royale {
     // Beam-shape helpers
     // =======================================================================
 
-    // get_gaussian_sigma -- Slang ref: scanline-functions.h:33-95.
+    // get_gaussian_sigma (Slang ref: scanline-functions.h:33-95).
     // We only port the power-shape branch (beam_spot_shape_function < 0.5,
     // the static default in user-settings.h).
     inline float3 get_gaussian_sigma(float3 color, float sigma_range,
@@ -168,7 +168,7 @@ namespace crt_royale {
                sigma_range * pow(color, float3(beam_spot_power));
     }
 
-    // get_generalized_gaussian_beta -- Slang ref: scanline-functions.h:97-124.
+    // get_generalized_gaussian_beta (Slang ref: scanline-functions.h:97-124).
     inline float3 get_generalized_gaussian_beta(float3 color, float shape_range,
                                                 float beam_min_shape,
                                                 float beam_shape_power)
@@ -189,8 +189,8 @@ namespace crt_royale {
     // The 3-sample average reduces aliasing for thin scanlines on coarse
     // output grids (one sample at dist, plus +/- pixel_height/3).
     //
-    // Static branches dropped from the slang reference (TODO: revisit when
-    // user-tunable beam config becomes a Kann-Kriterium):
+    // Static branches dropped from the slang reference, because they belong
+    // to beam options the port does not expose:
     //   - beam_antialias_level <= 0.5 (single-sample fallback)
     //   - beam_generalized_gaussian == false (pure Gaussian via erf integral)
     //   - beam_antialias_level > 1.5 (closed-form integral via ligamma)
@@ -225,7 +225,7 @@ namespace crt_royale {
         return scale / 3.0f * (w1 + w2 + w3);
     }
 
-    // get_last_scanline_uv -- Slang ref: scanline-functions.h:510-538.
+    // get_last_scanline_uv (Slang ref: scanline-functions.h:510-538).
     // Finds the previous scanline center in the current field and the sample's
     // distance from it (in scanlines).
     inline float2 get_last_scanline_uv(float2 tex_uv, float2 tex_size,
@@ -245,6 +245,53 @@ namespace crt_royale {
         float2 scanline_uv    = scanline_texel * tex_size_inv;
         dist = (curr_texel.y - scanline_texel.y) / il_step_multiple.y;
         return scanline_uv;
+    }
+
+    // =======================================================================
+    // Virtual source (RetroVisor only, no Slang counterpart)
+    //
+    // Slang defines a scanline as one row of the source texture. A console
+    // frame from an emulator has 240 or 480 rows, which the viewport stretches
+    // to roughly 4 to 8 output rows per scanline, so the beam profile has room
+    // to fall off between two rows. RetroVisor instead captures the screen at
+    // native resolution: source and output have the same height, every source
+    // row becomes exactly one output row, pixel_height =
+    // video_size.y / output_size.y is 1, and the dark gaps between scanlines
+    // cannot appear.
+    //
+    // This kernel recreates the emulator situation. It box-averages the
+    // captured rows down to output_height / scanline_distance rows and keeps
+    // the width. The ratio is purely vertical, which is the same regime as the
+    // headless runner's --scale and therefore the regime the delta-E
+    // validation covers. Row boundaries are fractional, so every input row
+    // contributes in proportion to its overlap with the output row.
+    // =======================================================================
+    kernel void pass0_virtual_source(
+        texture2d<float, access::sample> input   [[ texture(0) ]],
+        texture2d<float, access::write>  output  [[ texture(1) ]],
+        constant Uniforms               &u       [[ buffer(0)  ]],
+        sampler                         sam      [[ sampler(0) ]],
+        uint2                           gid      [[ thread_position_in_grid ]]
+    ) {
+        if (gid.x >= output.get_width() || gid.y >= output.get_height()) return;
+
+        const float in_h  = float(input.get_height());
+        const float ratio = in_h / float(output.get_height());  // input rows per output row
+        const float y0    = float(gid.y) * ratio;
+        const float y1    = y0 + ratio;
+        const float uv_x  = (float(gid.x) + 0.5f) / float(output.get_width());
+
+        float3 sum = float3(0.0f);
+        const int first = int(floor(y0));
+        const int last  = min(int(ceil(y1)), int(in_h));
+        for (int row = first; row < last; ++row) {
+            const float weight = min(float(row + 1), y1) - max(float(row), y0);
+            // Sampling at a texel centre returns that texel exactly, so the
+            // linear sampler does not blur here.
+            const float2 uv = float2(uv_x, (float(row) + 0.5f) / in_h);
+            sum += input.sample(sam, uv).rgb * weight;
+        }
+        output.write(float4(sum / ratio, 1.0f), gid);
     }
 
     // =======================================================================
@@ -318,7 +365,10 @@ namespace crt_royale {
         tex_uv *= 1.00001f;
 
         // Interlace step multiple: (1, 1) progressive or (1, 2) interlaced.
-        float y_step = is_interlaced(u.video_size.y, u.interlace_1080i)
+        // Honour interlace_detect like pass 1 and like the original, where
+        // is_interlaced() returns false while detection is off.
+        float y_step = (u.interlace_detect != 0 &&
+                        is_interlaced(u.video_size.y, u.interlace_1080i))
                        ? 2.0f : 1.0f;
         float2 il_step_multiple = float2(1.0f, y_step);
         float2 tex_size_inv     = 1.0f / u.texture_size;
@@ -382,35 +432,32 @@ namespace crt_royale {
     }
 
     // =======================================================================
-    // Pass 3: Apply phosphor mask (simplified for first cut)
+    // Pass 3 (slang pass 7): apply the phosphor mask and mix in halation
     // Slang ref: crt-royale-scanlines-horizontal-apply-mask.h
     //
-    // The full reference also samples the BLOOM_APPROX texture (Pass 2) for a
-    // fake phosphor bloom, samples HALATION_BLUR (Pass 4) for desaturated
-    // smear, and uses a precomputed MASK_RESIZE LUT (Pass 5+6) with custom
-    // tile bookkeeping. We skip all of that for now and produce the bare
-    // electron-times-mask product. That is exactly what the reference reduces
-    // to with halation_weight=0, PHOSPHOR_BLOOM_FAKE off, and either of the
-    // hardware-sample mask modes.
+    // Output = lerp(electron intensity, halation intensity, halation_weight)
+    // * mask, still dimmed by levels_autodim_temp; the un-dim happens in the
+    // bloom reconstitute pass.
     //
-    // Mask source: a procedurally generated aperture grille. Each output
-    // triad is `u.mask_triad_size` pixels wide and contains an R, G, B
-    // subpixel of equal width. mask_type other than 0 falls back to aperture
-    // grille for now (slot/shadow LUTs require the PNG-LUT loader, planned
-    // for a future iteration).
+    // Mask source, selected by uniforms:
+    //   - mask_lut_enabled == 0   procedural aperture grille (fallback and
+    //                             A/B check): `u.mask_triad_size` pixels per
+    //                             triad, R, G, B subpixels of equal width
+    //   - mask_sample_mode != 0   hardware resample of the large LUT (default;
+    //                             covers grille, slot and shadow mask)
+    //   - mask_sample_mode == 0   MASK_RESIZE output of slang passes 5 and 6
     //
-    // Static branches dropped from the reference (TODO: revisit):
+    // Halation: HALATION_BLUR is averaged to a scalar (electrons excite any
+    // phosphor, so no primary colour) and lerped in with halation_weight
+    // (slang apply-mask.h:209-222). At the slang default of 0 this is a
+    // no-op; the math still runs for runtime-tunable values.
+    //
+    // Not ported from the reference:
     //   - sample_rgb_scanline_horizontal (Quilez/Lanczos2 horizontal filter):
     //     replaced by a direct linear sample of the input. Visible only on
     //     low-res sources scaled to a non-integer multiple horizontally.
     //   - convergence_offset_x_{r,g,b}: assumed zero.
     //   - PHOSPHOR_BLOOM_FAKE: not implemented.
-    //
-    // Now ported (was previously skipped):
-    //   - HALATION_BLUR sampling + halation_weight lerp (slang ref
-    //     apply-mask.h:209-222). At slang default halation_weight=0 this is
-    //     a no-op, but the math runs for runtime-tunable values.
-    //   - mask LUT-based sampling (slot, shadow) via mask_lut_enabled.
     // =======================================================================
     kernel void pass3_apply_mask(
         texture2d<float, access::sample> input         [[ texture(0) ]],  // VERTICAL_SCANLINES
@@ -426,7 +473,7 @@ namespace crt_royale {
         if (gid.x >= output.get_width() || gid.y >= output.get_height()) return;
 
         // Sample the upstream scanline texture at our pixel center. We're not
-        // doing horizontal beam-filter shaping here -- direct linear sample.
+        // doing horizontal beam-filter shaping here: direct linear sample.
         float2 uv = (float2(gid) + 0.5f) /
                     float2(output.get_width(), output.get_height());
         float3 scanline_color_dim = input.sample(sam, uv).rgb;
@@ -460,7 +507,7 @@ namespace crt_royale {
             // Compute shaders have no implicit ddx/ddy; pass analytical UV
             // gradients so the sampler can pick the right mipmap LOD. One
             // screen pixel advances mask_tex_uv by (1/tile_size, 0) in x and
-            // (0, 1/tile_size) in y -- mirrors slang's automatic derivative.
+            // (0, 1/tile_size) in y, mirrors slang's automatic derivative.
             float2 ddx_uv = float2(1.0f / tile_size, 0.0f);
             float2 ddy_uv = float2(0.0f, 1.0f / tile_size);
             mask = mask_lut.sample(lut_sam, mask_tex_uv,
@@ -514,17 +561,16 @@ namespace crt_royale {
     //
     // Slang ref: crt-royale-bloom-approx.h (267 lines). Slang exposes three
     // filter modes via `bloom_approx_filter`:
-    //   0   -- bilinear sample of the source
-    //   1   -- 3x3 resize blur with dynamic sigma
-    //   2   -- 4x4 true Gaussian resize (slang default; this implementation)
+    //   0:   bilinear sample of the source
+    //   1:   3x3 resize blur with dynamic sigma
+    //   2:   4x4 true Gaussian resize (slang default; this implementation)
     //
-    // We implement mode 2, the slang default. An earlier iteration used the
-    // bilinear path together with a `--params bloom_approx_filter=0.0`
-    // override on the reference-capture side; that override is gone, so
-    // validation now runs against pure slang defaults.
+    // We implement mode 2, the slang default. Validation runs against the
+    // pure slang defaults, without parameter overrides on the reference-capture
+    // side.
     //
     // BLOOM_APPROX is consumed by the brightpass (pass 8), by halation V
-    // (pass 3) and -- when PHOSPHOR_BLOOM_FAKE is defined -- by apply-mask
+    // (pass 3) and, when PHOSPHOR_BLOOM_FAKE is defined, by apply-mask
     // (pass 7).
     //
     // Vertex stage (skipped here, compute kernel directly emits per-pixel UV):
@@ -580,7 +626,7 @@ namespace crt_royale {
         float3 c01 = tex.sample(sam, uv01).rgb;
         // NOTE: slang's bloom-approx.h:176 has a bug: it samples `dx` instead
         // of `sample2_uv`. We replicate that bug exactly because librashader
-        // does too -- the ΔE comparison would otherwise drift.
+        // does too; the ΔE comparison would otherwise drift.
         float3 c02 = tex.sample(sam, dx).rgb;
         float3 c03 = tex.sample(sam, uv03).rgb;
         float3 c04 = tex.sample(sam, uv04).rgb;
@@ -653,7 +699,7 @@ namespace crt_royale {
         // Slang chain: min_allowed_viewport_triads.x ≈ 144 with the default
         // mask_min_allowed_triad_size=2, max_mask_texel_border=1, plus the
         // 1/0.0625 viewport-scale factor (see derived-settings-and-constants.h
-        // lines 244-296). Hardcoded here -- depends only on static config.
+        // lines 244-296). Hardcoded here; it depends only on static config.
         constexpr float min_allowed_viewport_triads_x = 144.0f;
         constexpr float max_viewport_size_x          = 1080.0f * 1024.0f * (4.0f/3.0f);
         constexpr float bloom_diff_thresh            = 1.0f / 256.0f;
@@ -694,7 +740,7 @@ namespace crt_royale {
         // tex_uv_to_pixel_scale maps tex-uv to dest pixel coords.
         float2 tex_uv_to_pixel_scale = out_size;
 
-        // Sigma uses Slang's static-default path -- depends on viewport-X
+        // Sigma uses Slang's static-default path; it depends on viewport-X
         // estimate (= video.y * geom_aspect_ratio_static) and triad size.
         constexpr float geom_aspect_ratio_static = 1.313069909f;
         float estimated_viewport_size_x =
@@ -730,9 +776,8 @@ namespace crt_royale {
     //     give a static bloom_sigma = ~1.5608 (get_min_sigma_to_blur_triad
     //     with thresh=1/256). The center_weight that follows from this sigma
     //     and the default 9-tap blur is ~0.0658. Both are hardcoded here.
-    //     When the user changes mask_triad_size at runtime, we'd recompute
-    //     in MSL -- TODO for a follow-up iteration that exposes the dynamic
-    //     path (RUNTIME_PHOSPHOR_BLOOM_SIGMA in slang).
+    //     Changing mask_triad_size at runtime does not recompute them; the
+    //     dynamic path (RUNTIME_PHOSPHOR_BLOOM_SIGMA in slang) is not ported.
     //   - levels_contrast = 1.0 (default).
     //   - BRIGHTPASS_AREA_BASED branch skipped (slang default).
     // =======================================================================
@@ -1000,7 +1045,7 @@ namespace crt_royale {
     // The "r" axis is the one we resample along (the other dimension is
     // unchanged). For Pass 5 r = Y, for Pass 6 r = X.
     //
-    //   src_tex_uv: frac(src_tex_uv_wrap) -- one tile's worth of UV.
+    //   src_tex_uv: frac(src_tex_uv_wrap), one tile's worth of UV.
     //   tex_size:   source texture size (in texels).
     //   dr:         1/tex_size on the resampling axis.
     //   mag_scale:  pass_output_tile_size / src_lut_size on this axis.
@@ -1090,7 +1135,7 @@ namespace crt_royale {
         float2 tile_uv_wrap = uv * output_tiles_this_pass;
         float2 mag_scale  = pass_output_tile_size / MR_SRC_LUT_SIZE;
 
-        // Slang discards when tile_uv_wrap.y > num_tiles -- leaves the FBO
+        // Slang discards when tile_uv_wrap.y > num_tiles and leaves the FBO
         // untouched outside the first MR_NUM_TILES tiles. We write zeros
         // instead; this region is never sampled downstream (pass 7 only
         // samples the first tile worth via tile_uv_wrap = video_uv *
@@ -1145,7 +1190,7 @@ namespace crt_royale {
             return;
         }
 
-        // src_tex_uv_wrap = tile_uv_wrap * tile_size_uv -- in raw tex_uv coords.
+        // src_tex_uv_wrap = tile_uv_wrap * tile_size_uv, in raw tex_uv coords.
         // The downstream sinc helper takes the wrapped UV and does the fract
         // internally via tile_uv_wrap math; we replicate that by passing
         // frac(src_tex_uv_wrap).
@@ -1214,9 +1259,9 @@ namespace crt_royale {
     //   final              = lerp(phosphor_bloom, diffusion_color,
     //                              diffusion_weight)
     //
-    // diffusion_weight defaults to 0.075 (slang bind-shader-params.h:161) --
-    // not zero! Earlier iterations skipped this mix and were silently off
-    // by ~7.5% halation contribution. Fixed in this iteration.
+    // diffusion_weight defaults to 0.075 (slang bind-shader-params.h:161),
+    // not zero, so this mix has to run even at default settings: skipping it
+    // would be off by about 7.5% halation contribution.
     // =======================================================================
     kernel void pass_bloom_h_reconstitute(
         texture2d<float, access::sample> bloom_v          [[ texture(0) ]],  // BLOOM_V
@@ -1361,7 +1406,7 @@ namespace crt_royale {
     //
     // Slang ref: geometry-functions.h:563-663 (the DRIVERS_ALLOW_DERIVATIVES
     // path uses ddx/ddy which compute shaders don't have, so we drop the
-    // pixel_to_tangent matrix here -- it's only consumed by tex2Daa anyway).
+    // pixel_to_tangent matrix here; it's only consumed by tex2Daa anyway).
     inline float2 g4_curved_uv(float2 flat_uv, float2 geom_aspect,
                                 float radius)
     {
@@ -1389,7 +1434,7 @@ namespace crt_royale {
     }
 
     // Catmull-Rom cubic kernel (aa_cubic_c = 0.5, aa_cubic_b = 0). Slang ref
-    // tex2Dantialias.h:313-340 -- the Mitchell-Netravali "Keys cubic" family
+    // tex2Dantialias.h:313-340: the Mitchell-Netravali "Keys cubic" family
     // with B = 1 - 2C. With C = 0.5 (the Slang default `aa_cubic_c_static`),
     // this reduces to:
     //   |x| < 1:        1.5|x|^3 - 2.5|x|^2 + 1
@@ -1408,7 +1453,7 @@ namespace crt_royale {
     // aa_filter=6 (Cubic separable) + aa_level=12 uses a quincunx-pattern
     // 12-sample subset of a 4x4 grid with Catmull-Rom weights; we do the
     // full 4x4 grid (16 samples) which is slightly heavier but mathematically
-    // equivalent in expectation -- the 4 extra corner samples have weights
+    // equivalent in expectation; the 4 extra corner samples have weights
     // ~0.001 each. Slang's subpixel-R-offset (default -1/3 px) is baked in
     // per-channel as a sample-position shift.
     inline float3 g4_tex2Daa(texture2d<float, access::sample> tex, sampler sam,
@@ -1519,7 +1564,7 @@ namespace crt_royale {
 
         // Border dim factor (cgwg / TroggleMonkey algorithm, slang ref:
         // geometry-functions.h:665-688). geom_aspect is normally derived
-        // from viewport_aspect_ratio; we simplify to (1, 1) -- the visual
+        // from viewport_aspect_ratio; we simplify to (1, 1); the visual
         // difference vs the real aspect-scaled version is tiny for our
         // 4:3-ish viewports and avoids dragging in the rest of slang's
         // aspect-vector machinery.

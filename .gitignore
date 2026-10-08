@@ -10,11 +10,13 @@ DerivedData/
 *.air
 *.metallib
 
-# Documentation (privat -- Bericht, Status, Phase-4-Evaluation etc.)
+# Documentation (privat: Bericht, Status, Phase-4-Evaluation etc.)
 docs/
 
 # Python-venv (Setup: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt)
 .venv/
+__pycache__/
+*.pyc
 
 # Swift Package build artifacts (regenerable via tests/validate.sh)
 .build/

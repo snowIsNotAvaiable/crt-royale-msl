@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------------
-// CRT-Royale MSL Port -- MASK_RESIZE V/H (slang passes 5 + 6).
+// CRT-Royale MSL Port: MASK_RESIZE V/H (slang passes 5 + 6).
 //
 // Original: crt-royale by TroggleMonkey (GPL v2+).
 // Ported to Metal Shading Language for RetroVisor integration.
@@ -16,7 +16,7 @@
 //                                 when mask_sample_mode = 0 (slang default).
 //
 // Why this exists: Slang's apply-mask offers two paths for sampling the
-// phosphor mask -- mode 0 reads from a Lanczos-pre-resized tileable LUT
+// phosphor mask; mode 0 reads from a Lanczos-pre-resized tileable LUT
 // (this pipeline's output), mode 1 hardware-resamples the original LUT
 // with mipmap + anisotropic filtering. Both reach Pass 7's apply-mask code
 // path; the only difference is the texture being sampled and the spatial
@@ -41,13 +41,13 @@
 //     drives the tile size).
 //
 // Status: implemented, runs correctly, produces sensible Lanczos output.
-// Not yet bit-exact vs. librashader-cli's per-pass capture -- the discard
+// Not yet bit-exact vs. librashader-cli's per-pass capture; the discard
 // region geometry doesn't line up, because librashader's pass-5/6 output
 // at our viewport has only 9 non-zero pixels in a 16x48 FBO (it interprets
-// mask_resize_tile_size much smaller than my port). The math for
+// mask_resize_tile_size much smaller than this port). The math for
 // get_resized_mask_tile_size + mask_resize_num_tiles depends on a fan of
 // derived-settings constants that branch on user-settings.h defines;
-// the values librashader uses don't seem to match my hand-traced ones.
+// the values librashader uses don't seem to match the hand-traced ones.
 // Calibrating this further requires either an instrumented Slang build or
 // reading librashader's reflection output to inspect the actual constants.
 //

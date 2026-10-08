@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------------
-// CRT-Royale MSL Port -- Pass 11 full port (sphere raycaster + AA).
+// CRT-Royale MSL Port: Pass 11 full port (sphere raycaster + AA).
 //
 // Original: crt-royale by TroggleMonkey (GPL v2+).
 // Ported to Metal Shading Language for RetroVisor integration.
@@ -26,10 +26,10 @@
 //   slang geometry/AA helpers. Our existing pass 4 already matches the
 //   default-path behavior exactly (ΔE-validated end-to-end).
 //
-// What this iteration adds (for completeness of geom_mode > 0):
+// What this file covers beyond the default path (geom_mode > 0):
 //
 //   1. **Real sphere raycaster** (geometry-functions.h:563-663). Replaces
-//      the prior 1-line barrel-distortion approximation. Now does actual
+//      a one-line barrel-distortion approximation. It does an actual
 //      eye-to-screen ray intersection with a sphere of radius geom_radius,
 //      maps the intersection point through sphere_xyz_to_uv (great-circle
 //      arc length parameterization), recenters around 0.5.

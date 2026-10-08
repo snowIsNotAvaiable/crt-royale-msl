@@ -5,9 +5,9 @@
 // Ported to Metal Shading Language for RetroVisor integration.
 //
 // Slang reference: crt-royale-scanlines-horizontal-apply-mask.{slang,h}
-// Slang pass index: 7   (in our pipeline this is Pass 3, since we have not yet
-//                        ported Slang Passes 2..6 -- BLOOM_APPROX, halation
-//                        Blur9 V/H, Mask Resize V/H).
+// Slang pass index: 7   (Pass 3 in our numbering; Slang passes 2..6 are
+//                        BLOOM_APPROX, the halation Blur9 V/H pair and
+//                        Mask Resize V/H).
 //
 // What this pass does:
 //   For each output pixel, sample the upstream vertical-scanline texture and
@@ -35,22 +35,22 @@
 //      Generate an aperture grille on the fly. Used when no LUT texture is
 //      bound. Sharper-looking output but no slang equivalence.
 //
-// Static-config simplifications still in place relative to the slang ref:
+// Static-config simplifications relative to the slang ref:
 //   - No horizontal beam-filter shaping (sample_rgb_scanline_horizontal):
 //     direct linear sample of the input. Equivalent to beam_horiz_filter
 //     defaulting to a delta function rather than Quilez/Lanczos2.
 //   - convergence_offset_x_{r,g,b} = 0 (no chromatic aberration).
-//   - halation_weight = 0 (this is the slang default too, but explicit here).
+//   - halation_weight is fixed at 0 in this mirror (the slang default); the
+//     production kernel mixes HALATION_BLUR in at runtime.
 //   - No PHOSPHOR_BLOOM_FAKE.
-//   - Only mask_type = 0 (aperture grille) currently shipped. Slot/shadow
-//     LUTs exist in vendor/slang-shaders -- enabling them is a matter of
-//     loading the other PNGs and adding a mask_type runtime switch.
+//   Slot and shadow masks use the same LUT path; the production kernel picks
+//   the texture by mask_type (see CrtRoyale.metal).
 //
 // The mask_amplify and undim factors that slang's pass 11 applies live in
-// our pass_final_encode for now (collapsed because pass 11 isn't ported).
-// Pass 3 itself outputs the "dim" scanline * mask product unmodified --
-// this matches slang pass 7's output and is what the validation pipeline
-// compares against.
+// the bloom reconstitute pass (pass_bloom_h_reconstitute) of the production
+// kernels. Pass 3 itself outputs the "dim" scanline * mask product
+// unmodified; this matches slang pass 7's output and is what the validation
+// pipeline compares against.
 //
 // NOTE: This file is the standalone study mirror; the kernel that gets built
 // lives in vendor/RetroVisor/RetroVisor/GPU/CrtRoyale.metal.

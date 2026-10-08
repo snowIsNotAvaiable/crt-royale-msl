@@ -75,7 +75,10 @@ final class CrtRoyale: Shader {
         static let defaults = Uniforms(
             crt_gamma: 2.5,
             lcd_gamma: 2.2,
-            interlace_detect: 1,
+            interlace_detect: 0,         // desktop capture is progressive. With the
+                                         // virtual source below the line count lands in
+                                         // the 289..576 range that slang treats as
+                                         // interlaced, which would flicker per frame.
             interlace_bff: 0,
             interlace_1080i: 0,
             frame_count: 0,
@@ -98,11 +101,11 @@ final class CrtRoyale: Shader {
             mask_sample_mode: 1,         // hardware-resample (validated path).
                                          // mode 0 (sample MASK_RESIZE) is
                                          // implemented but not yet bit-exact
-                                         // vs. Slang -- see Status.md.
+                                         // vs. Slang (see README, known limits).
             halation_weight: 0.0,
             diffusion_weight: 0.075,
             // Pass 4 defaults: barrel curvature ON for app demo (slang default
-            // is 0/flat -- we override here because the iconic CRT look is
+            // is 0/flat; we override here because the iconic CRT look is
             // the whole point of the on-screen preview). brightness_boost is
             // now 1.0 because BLOOM_FINAL (the new Pass 4 input) already
             // bakes the un-dim + mask-amplify into its values; legacy hack
@@ -120,7 +123,18 @@ final class CrtRoyale: Shader {
     var uniforms: Uniforms = .defaults
     var frameCounter: UInt32 = 0
 
+    // Output pixels per scanline (1 = off). RetroVisor captures the screen at
+    // native resolution, so source and output have the same height and every
+    // source row is exactly one output row: the beam has no room to fall off
+    // between rows and no scanlines appear. A value above 1 reduces the source
+    // to output_height / scanline_distance rows first (pass0_virtual_source),
+    // which restores the ratio an emulator frame has (240 or 480 rows on a
+    // much taller viewport). Not part of Uniforms: it only decides what the
+    // pipeline receives as its source image.
+    var scanlineDistance: Float = 4.0
+
     // Compute kernels
+    var virtualSourceKernel: Kernel!
     var linearizeKernel: Kernel!
     var pass2Kernel: Kernel!
     var pass3Kernel: Pass3Kernel!
@@ -134,6 +148,9 @@ final class CrtRoyale: Shader {
     var bloomVKernel: Kernel!
     var bloomHKernel: BloomHReconstituteKernel!
     var finalEncodeKernel: Kernel!
+
+    // Vertically reduced copy of the captured screen (see scanlineDistance).
+    var virtualSource: MTLTexture?
 
     // Intermediate textures (linear-light, rgba16Float for HDR headroom)
     var linearized: MTLTexture!
@@ -149,7 +166,7 @@ final class CrtRoyale: Shader {
     var bloomFinal: MTLTexture!
 
     // Phosphor-mask LUT (loaded once, mipmapped). Lives in the bundle next to
-    // the shader sources. nil if the file isn't shipped -- pass3 falls back
+    // the shader sources. nil if the file isn't shipped; pass3 falls back
     // to the procedural aperture grille in that case.
     var maskLut: MTLTexture?           // Currently-active large LUT (hardware-resample, mode=1)
     var maskLutGrille: MTLTexture?     // mask_type = 0
@@ -192,6 +209,14 @@ final class CrtRoyale: Shader {
             ]),
 
             Group(title: "Beam", [
+
+                ShaderSetting(
+                    title: "Scanline Distance (px)",
+                    range: 1.0...12.0, step: 1.0,
+                    value: Binding(
+                        key: "SCANLINE_DISTANCE",
+                        get: { [unowned self] in self.scanlineDistance },
+                        set: { [unowned self] in self.scanlineDistance = $0 })),
 
                 ShaderSetting(
                     title: "Min Sigma",
@@ -264,7 +289,7 @@ final class CrtRoyale: Shader {
                         get: { [unowned self] in self.uniforms.mask_triad_size },
                         set: { [unowned self] in self.uniforms.mask_triad_size = $0 })),
 
-                // mask_amplify is no longer user-tunable here -- it is set
+                // mask_amplify is no longer user-tunable here; it is set
                 // automatically in apply() based on mask_type (using the
                 // slang-derived 1/mask_*_avg_color constants). Adding the
                 // slider back would require also disabling the auto-update.
@@ -423,6 +448,7 @@ final class CrtRoyale: Shader {
 
         super.activate()
 
+        virtualSourceKernel = VirtualSourceKernel(sampler: ShaderLibrary.linear)
         linearizeKernel   = Pass1Kernel(sampler: ShaderLibrary.linear)
         pass2Kernel       = Pass2Kernel(sampler: ShaderLibrary.linear)
         pass3Kernel       = Pass3Kernel(sampler: ShaderLibrary.linear)
@@ -505,9 +531,12 @@ final class CrtRoyale: Shader {
         // Use rgba16Float for intermediates: beam contributions can exceed
         // 1.0 before levels_autodim_temp clamps them, so 8-bit unorm would
         // silently clip.
-        if linearized?.width != w || linearized?.height != h {
+        // Pass 1 keeps source resolution (slang scale_type=source), so the
+        // scanline pass reads real source rows. This only differs from the
+        // output size once the virtual source is active.
+        if linearized?.width != input.width || linearized?.height != input.height {
             linearized = Shader.makeTexture("crt-royale-linear",
-                                            width: w, height: h,
+                                            width: input.width, height: input.height,
                                             pixelFormat: .rgba16Float)
         }
         if scanlinesVertical?.width != w || scanlinesVertical?.height != h {
@@ -521,7 +550,7 @@ final class CrtRoyale: Shader {
                                                  pixelFormat: .rgba16Float)
         }
         // BLOOM_APPROX: slang pass 2 absolute scale 320x240. Reallocate only
-        // if it hasn't been created yet -- the size is fixed.
+        // if it hasn't been created yet; the size is fixed.
         if bloomApprox == nil {
             bloomApprox = Shader.makeTexture("crt-royale-bloom-approx",
                                              width: 320, height: 240,
@@ -576,21 +605,55 @@ final class CrtRoyale: Shader {
         }
     }
 
+    /// Returns the texture the pipeline treats as its source frame.
+    ///
+    /// With scanline_distance 1, or when the capture already has no more rows
+    /// than the target (a low-resolution source that carries its own
+    /// scanlines), the capture is used unchanged. Otherwise it is reduced to
+    /// output_height / scanline_distance rows by pass0_virtual_source.
+    func prepareSource(commandBuffer: MTLCommandBuffer,
+                       input: MTLTexture, output: MTLTexture) -> MTLTexture {
+
+        let distance = max(1.0, scanlineDistance.rounded())
+        let rows = Int((Float(output.height) / distance).rounded())
+        guard distance > 1, rows >= 8, rows < input.height else { return input }
+
+        if virtualSource?.width  != input.width ||
+           virtualSource?.height != rows ||
+           virtualSource?.pixelFormat != output.pixelFormat {
+            virtualSource = Shader.makeTexture("crt-royale-virtual-source",
+                                               width: input.width, height: rows,
+                                               pixelFormat: output.pixelFormat)
+        }
+        guard let target = virtualSource else { return input }
+
+        virtualSourceKernel.apply(commandBuffer: commandBuffer,
+                                  source: input, target: target,
+                                  options: &uniforms,
+                                  length: MemoryLayout<Uniforms>.stride)
+        return target
+    }
+
     override func apply(commandBuffer: MTLCommandBuffer,
                         in input: MTLTexture, out output: MTLTexture, rect: CGRect) {
 
-        updateTextures(in: input, out: output)
+        // The image that plays the role of the "game frame": the capture
+        // itself, or its vertically reduced copy when scanline_distance > 1.
+        let source = prepareSource(commandBuffer: commandBuffer,
+                                   input: input, output: output)
+
+        updateTextures(in: source, out: output)
 
         // Per-frame uniforms
         frameCounter &+= 1
         uniforms.frame_count  = frameCounter
-        uniforms.texture_size = SIMD2<Float>(Float(input.width), Float(input.height))
-        uniforms.video_size   = SIMD2<Float>(Float(input.width), Float(input.height))
+        uniforms.texture_size = SIMD2<Float>(Float(source.width), Float(source.height))
+        uniforms.video_size   = SIMD2<Float>(Float(source.width), Float(source.height))
         uniforms.output_size  = SIMD2<Float>(Float(output.width), Float(output.height))
 
         // Pass 1: Linearize CRT gamma + bob interlaced fields
         linearizeKernel.apply(commandBuffer: commandBuffer,
-                              source: input, target: linearized,
+                              source: source, target: linearized,
                               options: &uniforms,
                               length: MemoryLayout<Uniforms>.stride)
 
@@ -643,7 +706,7 @@ final class CrtRoyale: Shader {
         // MASK_RESIZE_V (slang Pass 5) + MASK_RESIZE (slang Pass 6). Both
         // discard outside MR_NUM_TILES tiles, so only the first 2x2 tile area
         // gets real Lanczos-resampled data; the rest is filled with zeros.
-        // This is fine -- Pass 7 only reads the first tile region.
+        // This is fine; Pass 7 only reads the first tile region.
         if let lutSmall = activeLutSmall {
             maskResizeVKernel.apply(commandBuffer: commandBuffer,
                                     source: lutSmall, target: maskResizeV,
@@ -732,6 +795,12 @@ final class CrtRoyale: Shader {
 
 extension CrtRoyale {
 
+    class VirtualSourceKernel: Kernel {
+        convenience init?(sampler: MTLSamplerState) {
+            self.init(name: "crt_royale::pass0_virtual_source", sampler: sampler)
+        }
+    }
+
     class Pass1Kernel: Kernel {
         convenience init?(sampler: MTLSamplerState) {
             self.init(name: "crt_royale::pass1_linearize", sampler: sampler)
@@ -813,7 +882,7 @@ extension CrtRoyale {
 
     /// MaskResizeV / MaskResizeH are single-axis Lanczos-sinc resamplers
     /// for the phosphor-mask LUT. Slang passes 5+6. Standard 1-input
-    /// kernels -- the base Kernel.apply() works directly.
+    /// kernels; the base Kernel.apply() works directly.
     class MaskResizeVKernel: Kernel {
         convenience init?(sampler: MTLSamplerState) {
             self.init(name: "crt_royale::pass_mask_resize_v", sampler: sampler)

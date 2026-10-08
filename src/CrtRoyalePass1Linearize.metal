@@ -47,7 +47,7 @@ namespace crt_royale {
     //   SD interlace band: 288.5 < lines < 576.5  (NTSC 480i, PAL 576i)
     //   HD interlace band: 1079.5 < lines < 1080.5, only when interlace_1080i
     //
-    // This must match Pass 2's is_interlaced exactly -- otherwise progressive
+    // This must match Pass 2's is_interlaced exactly; otherwise progressive
     // and interlaced classification can disagree between passes and produce
     // visible jitter. See CrtRoyale.metal for the canonical definition.
     // -----------------------------------------------------------------------
@@ -70,9 +70,9 @@ namespace crt_royale {
     // -----------------------------------------------------------------------
     // Helper: Encode output for intermediate passes
     // For intermediate FBOs (not the final output), we don't apply output
-    // gamma -- we stay in linear space. This function is a no-op for now
-    // but exists to match the original shader's encode_output() pattern.
-    // In later passes we may encode to sRGB or apply lcd_gamma.
+    // gamma; we stay in linear space. This function is a no-op; it exists
+    // to match the original shader's encode_output() pattern. The display
+    // encode happens once, in the last pass.
     // -----------------------------------------------------------------------
     inline float4 encode_output(float4 color) {
         // Intermediate pass: output linear color as-is

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# capture_reference.sh -- Run the original Slang crt-royale.slangp through
+# capture_reference.sh: Run the original Slang crt-royale.slangp through
 # librashader-cli for each test input, producing per-pass reference PNGs
 # that line up 1:1 with our MSL pipeline outputs in tests/outputs/<mode>/.
 #

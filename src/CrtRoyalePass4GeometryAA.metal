@@ -9,15 +9,15 @@
 // Slang pass index: 11 (our pass 4 corresponds to slang's pass 11).
 //
 // ==================================================================
-// IMPORTANT: this file is the original Iteration-13 study mirror and
-// only documents the SIMPLIFIED variant. The full port -- including the
-// real Slang sphere raycaster (geometry-functions.h:563-663) and a
-// 16-tap separable Catmull-Rom-cubic AA kernel -- is documented in the
-// companion study mirror CrtRoyalePass11FullPort.metal (and lives in
-// the production CrtRoyale.metal as `pass4_geometry_aa`).
+// IMPORTANT: this file documents only the SIMPLIFIED variant of pass 4
+// (default path). The full port, including the real Slang sphere raycaster
+// (geometry-functions.h:563-663) and a 16-tap separable Catmull-Rom-cubic AA
+// kernel, is documented in the companion study mirror
+// CrtRoyalePass11FullPort.metal and lives in the production CrtRoyale.metal
+// as `pass4_geometry_aa`.
 // ==================================================================
 //
-// Pipeline position in our MSL implementation (post-Iteration-16):
+// Pipeline position in our MSL implementation:
 //   ... -> BLOOM_FINAL (slang pass 10 alias) -> pass4_geometry_aa -> output
 //
 // Slang's pass 11 main() at default settings (geom_mode=0, overscan=1,
@@ -25,15 +25,15 @@
 //   1. color = tex2D_linearize(input_texture, tex_uv).rgb
 //   2. color *= get_border_dim_factor(video_uv, geom_aspect)
 //   3. encode_output(color)              // display gamma
-// Our default path implements exactly these three steps -- bit-exact to
+// Our default path implements exactly these three steps, bit-exact to
 // Slang within the limits of float precision.
 //
-// What this iteration adds (also see CrtRoyalePass11FullPort.metal):
+// What the production kernel adds on top (also see CrtRoyalePass11FullPort.metal):
 //
 //   - Real sphere-raycaster for geom_mode=1 (slang's
 //     get_curved_video_uv_coords_and_tangent_matrix path with eye-pos,
 //     ray-sphere intersection, sphere_xyz_to_uv great-circle mapping).
-//     Replaces the prior `c *= 1 + k * |c|^2` barrel approximation.
+//     Replaces a `c *= 1 + k * |c|^2` barrel approximation.
 //   - 16-tap separable Catmull-Rom-cubic AA (`g4_tex2Daa`) used when
 //     curvature is active. Slang's aa_filter=6 + aa_cubic_c=0.5.
 //   - Subpixel R offset (-1/3 px) baked into the AA kernel.
@@ -72,7 +72,7 @@ namespace crt_royale {
         // 1. Compute flat or curved video_uv.
         //    - geom_mode == 0: video_uv = flat_uv (Slang default fall-through).
         //    - geom_mode == 1: g4_curved_uv(flat_uv, geom_aspect, radius)
-        //      (full Slang sphere raycaster -- see CrtRoyalePass11FullPort.metal).
+        //      (full Slang sphere raycaster; see CrtRoyalePass11FullPort.metal).
         //
         // 2. Sample input.
         //    - off-screen: return black (bezel).

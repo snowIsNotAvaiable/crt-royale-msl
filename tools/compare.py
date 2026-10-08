@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""compare.py -- Per-Pixel-Differenz zwischen zwei Snapshots.
+"""compare.py: Per-Pixel-Differenz zwischen zwei Snapshots.
 
 Vergleicht zwei PNGs (z.B. unsere MSL-Pipeline-Ausgabe vs. RetroArch-Reference)
 mit perzeptuellen Metriken:
@@ -83,7 +83,7 @@ def render_heatmap_png(de_per_pixel: np.ndarray, path: Path,
     """Black -> red linear mapping; values >= de_max saturate red.
 
     The 0..de_max range covers "imperceptible" through "clearly visible"
-    differences -- standard interpretation of Delta E in JNDs."""
+    differences, standard interpretation of Delta E in JNDs."""
     norm = np.clip(de_per_pixel / max(de_max, 1e-6), 0.0, 1.0)
     img = np.zeros((*de_per_pixel.shape, 3), dtype=np.uint8)
     img[..., 0] = (norm * 255.0).astype(np.uint8)  # red channel

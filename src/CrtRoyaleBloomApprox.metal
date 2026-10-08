@@ -12,14 +12,12 @@
 // Output format: absolute 320x240 RGBA float, regardless of source size.
 //
 // Filter modes in slang (selected by `bloom_approx_filter`):
-//   0    -- bilinear single-sample (1 sample/pixel)
-//   1    -- 3x3 resize blur with dynamic Gaussian sigma (9 samples)
-//   2    -- 4x4 true Gaussian resize (slang default, 16 samples)
+//   0:    bilinear single-sample (1 sample/pixel)
+//   1:    3x3 resize blur with dynamic Gaussian sigma (9 samples)
+//   2:    4x4 true Gaussian resize (slang default, 16 samples)
 //
-// THIS port covers mode 2 (slang default). An earlier iteration used the
-// bilinear path with a `--params bloom_approx_filter=0.0` override on the
-// reference-capture side; the override is no longer needed -- delta-E is
-// now measured against pure Slang defaults.
+// This port covers mode 2 (slang default). Delta-E is measured against pure
+// Slang defaults, without parameter overrides on the reference-capture side.
 //
 // What slang pass 2 does (mode 2, no PHOSPHOR_BLOOM_FAKE, default convergence
 // offsets = 0 so beam_misconvergence reduces to single-channel sampling):
@@ -31,7 +29,7 @@
 //      Gaussian weights from pixel-space distance, normalize.
 //   3. Write the weighted sum to the 320x240 FBO (no gamma encoding).
 //
-// Skipped from the slang reference (TODO):
+// Not ported from the slang reference:
 //   - 3x3 resize blur path (mode 1)
 //   - beam_misconvergence with non-zero convergence offsets (would triple
 //     the sample count to 48). Default offsets are zero, so disabled.
@@ -51,7 +49,7 @@ namespace crt_royale {
     // Sigma calculation. With slang's default chain (mask_min_allowed_triad_size
     // = 2, max_mask_texel_border = 1, mask_resize_viewport_scale = 0.0625),
     // min_allowed_viewport_triads.x evaluates to ~144. The runtime triad count
-    // gets clamped to that floor for small viewports -- so the sigma's "static
+    // gets clamped to that floor for small viewports, so the sigma's "static
     // limit" component is constant for typical setups. The viewport-dependent
     // multiplier (output.x/max_viewport_size_x) does most of the actual
     // scaling.
